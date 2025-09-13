@@ -5,11 +5,11 @@ import { authOptions } from '@/lib/auth';
 import { getStorageConfig } from '@/lib/storage';
 
 const s3Client = new S3Client({
-  region: process.env.CLOUDFLARE_R2_REGION || 'auto',
-  endpoint: process.env.CLOUDFLARE_R2_ENDPOINT,
+  region: process.env.S3_REGION || 'auto',
+  endpoint: process.env.S3_ENDPOINT,
   credentials: {
-    accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY!,
+    accessKeyId: process.env.S3_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
   },
 });
 
@@ -54,7 +54,7 @@ export async function POST(req: Request) {
       
       // List all objects with the prefix of the old folder key
       const listParams = {
-        Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
+        Bucket: process.env.S3_BUCKET!,
         Prefix: oldKeyNormalized
       };
 
@@ -76,14 +76,14 @@ export async function POST(req: Request) {
           
           // Copy the object to the new location
           await s3Client.send(new CopyObjectCommand({
-            Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
-            CopySource: `${process.env.CLOUDFLARE_R2_BUCKET}/${object.Key}`,
+            Bucket: process.env.S3_BUCKET!,
+            CopySource: `${process.env.S3_BUCKET}/${object.Key}`,
             Key: objectNewKey
           }));
           
           // Delete the old object
           await s3Client.send(new DeleteObjectCommand({
-            Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
+            Bucket: process.env.S3_BUCKET!,
             Key: object.Key
           }));
         }
@@ -94,7 +94,7 @@ export async function POST(req: Request) {
         // For empty folders in S3, we might need to create a marker object
         // First check if the old empty folder marker exists
         const emptyMarkerExists = await s3Client.send(new ListObjectsV2Command({
-          Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
+          Bucket: process.env.S3_BUCKET!,
           Prefix: oldKeyNormalized,
           MaxKeys: 1
         }));
@@ -102,13 +102,13 @@ export async function POST(req: Request) {
         // Create a new empty folder marker
         if (emptyMarkerExists.Contents && emptyMarkerExists.Contents.length > 0) {
           await s3Client.send(new CopyObjectCommand({
-            Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
-            CopySource: `${process.env.CLOUDFLARE_R2_BUCKET}/${oldKeyNormalized}`,
+            Bucket: process.env.S3_BUCKET!,
+            CopySource: `${process.env.S3_BUCKET}/${oldKeyNormalized}`,
             Key: newKeyNormalized
           }));
           
           await s3Client.send(new DeleteObjectCommand({
-            Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
+            Bucket: process.env.S3_BUCKET!,
             Key: oldKeyNormalized
           }));
         }
@@ -116,13 +116,13 @@ export async function POST(req: Request) {
     } else {
       // For a single file, just copy and delete
       await s3Client.send(new CopyObjectCommand({
-        Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
-        CopySource: `${process.env.CLOUDFLARE_R2_BUCKET}/${oldKey}`,
+        Bucket: process.env.S3_BUCKET!,
+        CopySource: `${process.env.S3_BUCKET}/${oldKey}`,
         Key: newKey
       }));
       
       await s3Client.send(new DeleteObjectCommand({
-        Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
+        Bucket: process.env.S3_BUCKET!,
         Key: oldKey
       }));
     }

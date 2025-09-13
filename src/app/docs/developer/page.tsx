@@ -11,7 +11,7 @@ const tableOfContents = [
 
 export default function DeveloperPage() {
   return (
-    <div className="prose prose-slate max-w-none">
+    <div className="prose prose-slate max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-li:text-gray-700 prose-strong:text-gray-900">
       <div className="not-prose mb-8">
         <h1 className="text-4xl font-bold text-slate-900 mb-4">MegaVault Developer Guide</h1>
         <p className="text-xl text-slate-600">
@@ -345,7 +345,7 @@ export default function DeveloperPage() {
                 🏗️ Explore Architecture
               </Link>
               <Link
-                href="https://github.com/yourusername/megavault-open-source"
+                href="https://github.com/iotserver24/S3-MegaVault"
                 className="inline-flex items-center px-6 py-3 border border-slate-300 text-slate-700 bg-white rounded-md hover:bg-slate-50 font-semibold"
                 target="_blank"
                 rel="noopener noreferrer"

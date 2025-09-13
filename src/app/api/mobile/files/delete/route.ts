@@ -5,11 +5,11 @@ import { authenticateMobile, corsHeaders } from '@/lib/mobile-auth';
 import { getStorageConfig } from '@/lib/storage';
 
 const s3Client = new S3Client({
-  region: process.env.CLOUDFLARE_R2_REGION || 'auto',
-  endpoint: process.env.CLOUDFLARE_R2_ENDPOINT,
+  region: process.env.S3_REGION || 'auto',
+  endpoint: process.env.S3_ENDPOINT,
   credentials: {
-    accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY!,
+    accessKeyId: process.env.S3_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
   },
 });
 
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     if (isFolder) {
       // Delete all objects within the folder
       const listCommand = new ListObjectsV2Command({
-        Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
+        Bucket: process.env.S3_BUCKET!,
         Prefix: key,
       });
 
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
         for (const object of listResponse.Contents) {
           if (object.Key) {
             const deleteCommand = new DeleteObjectCommand({
-              Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
+              Bucket: process.env.S3_BUCKET!,
               Key: object.Key,
             });
             
@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
     } else {
       // Delete single file
       const deleteCommand = new DeleteObjectCommand({
-        Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
+        Bucket: process.env.S3_BUCKET!,
         Key: key,
       });
       

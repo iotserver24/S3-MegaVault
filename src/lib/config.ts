@@ -8,11 +8,11 @@ export interface EnvironmentConfig {
   UPSTASH_REDIS_REST_TOKEN: string;
 
   // Storage (S3 Compatible)
-  CLOUDFLARE_R2_ENDPOINT: string;
-  CLOUDFLARE_R2_ACCESS_KEY_ID: string;
-  CLOUDFLARE_R2_SECRET_ACCESS_KEY: string;
-  CLOUDFLARE_R2_BUCKET_NAME: string;
-  CLOUDFLARE_R2_REGION: string;
+  S3_ENDPOINT: string;
+  S3_ACCESS_KEY_ID: string;
+  S3_SECRET_ACCESS_KEY: string;
+  S3_BUCKET: string;
+  S3_REGION: string;
 
   // Authentication
   NEXTAUTH_URL: string;
@@ -42,10 +42,10 @@ export function validateEnvironmentConfig(): EnvironmentConfig {
   const required = [
     'UPSTASH_REDIS_REST_URL',
     'UPSTASH_REDIS_REST_TOKEN',
-    'CLOUDFLARE_R2_ENDPOINT',
-    'CLOUDFLARE_R2_ACCESS_KEY_ID',
-    'CLOUDFLARE_R2_SECRET_ACCESS_KEY',
-    'CLOUDFLARE_R2_BUCKET_NAME',
+    'S3_ENDPOINT',
+    'S3_ACCESS_KEY_ID',
+    'S3_SECRET_ACCESS_KEY',
+    'S3_BUCKET',
     'NEXTAUTH_SECRET',
     'USER_EMAIL',
     'USER_PASSWORD'

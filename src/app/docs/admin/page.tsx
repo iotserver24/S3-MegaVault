@@ -385,10 +385,10 @@ fi
 
 # Check disk usage
 DISK_USAGE=$(df -h / | awk 'NR==2 {print $5}' | sed 's/%//')
-if [ $DISK_USAGE -gt 80 ]; then
-    echo "[$DATE] ⚠ Disk usage high: ${DISK_USAGE}%" >> $LOG_FILE
+if [ "$DISK_USAGE" -gt 80 ]; then
+    echo "[$DATE] ⚠ Disk usage high: $DISK_USAGE%" >> $LOG_FILE
 else
-    echo "[$DATE] ✓ Disk usage normal: ${DISK_USAGE}%" >> $LOG_FILE
+    echo "[$DATE] ✓ Disk usage normal: $DISK_USAGE%" >> $LOG_FILE
 fi
 
 echo "[$DATE] Health check completed" >> $LOG_FILE`}

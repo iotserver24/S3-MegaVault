@@ -158,9 +158,13 @@ html {
 
 /* Base styles */
 body {
+  overflow-x: hidden;
+}
+
+/* Dark theme styles - only apply to pages that need it */
+.dark-theme {
   background-color: black;
   color: white;
-  overflow-x: hidden;
 }
 
 /* Glass effect */

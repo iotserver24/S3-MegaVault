@@ -22,13 +22,13 @@ export function getStorageConfig() {
   };
 }
 
-// Initialize S3 client for Cloudflare R2
+// Initialize S3 client for S3-compatible storage
 const s3Client = new S3Client({
-  region: process.env.CLOUDFLARE_R2_REGION || 'auto',
-  endpoint: process.env.CLOUDFLARE_R2_ENDPOINT,
+  region: process.env.S3_REGION || 'auto',
+  endpoint: process.env.S3_ENDPOINT,
   credentials: {
-    accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY!,
+    accessKeyId: process.env.S3_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
   },
 });
 
@@ -56,7 +56,7 @@ export async function deleteUserFiles(email: string): Promise<void> {
     
     // List all objects in the user's folder
     const listParams = {
-      Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
+      Bucket: process.env.S3_BUCKET!,
       Prefix: `${folderId}/`,
     };
     
@@ -76,7 +76,7 @@ export async function deleteUserFiles(email: string): Promise<void> {
         // If there are many objects, we can use the batch delete
         if (objects.length > 1) {
           const deleteParams = {
-            Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
+            Bucket: process.env.S3_BUCKET!,
             Delete: {
               Objects: objects.map((obj: any) => ({ Key: obj.Key })),
               Quiet: true,
@@ -87,7 +87,7 @@ export async function deleteUserFiles(email: string): Promise<void> {
         } else {
           // For a single object, use regular delete
           const deleteParams = {
-            Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
+            Bucket: process.env.S3_BUCKET!,
             Key: objects[0].Key,
           };
           

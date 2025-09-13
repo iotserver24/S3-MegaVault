@@ -89,11 +89,15 @@ A modern, self-hosted cloud storage platform built with Next.js, React, and Flut
 UPSTASH_REDIS_REST_URL=redis://localhost:6379
 UPSTASH_REDIS_REST_TOKEN=your_redis_token
 
+# Storage Access Configuration
+STORAGE_ACCESS_MODE=bucket              # Options: bucket | folder
+USER_STORAGE_FOLDER=single-user-folder  # Only needed for folder mode
+
 # Storage (S3 Compatible)
-CLOUDFLARE_R2_ENDPOINT=https://your-account.r2.cloudflarestorage.com
-CLOUDFLARE_R2_ACCESS_KEY_ID=your_access_key
-CLOUDFLARE_R2_SECRET_ACCESS_KEY=your_secret_key
-CLOUDFLARE_R2_BUCKET_NAME=megavault-storage
+S3_ENDPOINT=https://your-account.r2.cloudflarestorage.com
+S3_ACCESS_KEY_ID=your_access_key
+S3_SECRET_ACCESS_KEY=your_secret_key
+S3_BUCKET=megavault-storage
 
 # Authentication
 NEXTAUTH_SECRET=your_secure_secret_here
@@ -102,6 +106,20 @@ NEXTAUTH_SECRET=your_secure_secret_here
 USER_EMAIL=user@yourdomain.com
 USER_PASSWORD=your_secure_password
 ```
+
+### Storage Access Modes
+
+**Bucket Mode** (Recommended for personal use):
+- Complete access to the entire storage bucket
+- Files stored directly at bucket root
+- Maximum flexibility for file organization
+- Set `STORAGE_ACCESS_MODE=bucket`
+
+**Folder Mode** (Recommended for shared buckets):
+- Files isolated within a specific folder
+- Better organization and security
+- Ideal for shared storage environments
+- Set `STORAGE_ACCESS_MODE=folder` and `USER_STORAGE_FOLDER=your-folder-name`
 
 ### Optional Settings
 

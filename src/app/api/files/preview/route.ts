@@ -5,11 +5,11 @@ import { authOptions } from '@/lib/auth';
 import { getToken } from 'next-auth/jwt';
 
 const s3Client = new S3Client({
-  region: process.env.CLOUDFLARE_R2_REGION || 'auto',
-  endpoint: process.env.CLOUDFLARE_R2_ENDPOINT,
+  region: process.env.S3_REGION || 'auto',
+  endpoint: process.env.S3_ENDPOINT,
   credentials: {
-    accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY!,
+    accessKeyId: process.env.S3_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
   },
 });
 
@@ -31,7 +31,7 @@ export async function GET(req: Request) {
     let isPublic = false;
     try {
       const headCommand = new HeadObjectCommand({
-        Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
+        Bucket: process.env.S3_BUCKET!,
         Key: key,
       });
       const headResult = await s3Client.send(headCommand);
@@ -84,7 +84,7 @@ export async function GET(req: Request) {
     // Handle range request for video streaming
     const range = req.headers.get('range');
     const commandInput: any = {
-      Bucket: process.env.CLOUDFLARE_R2_BUCKET,
+      Bucket: process.env.S3_BUCKET,
       Key: key,
     };
 

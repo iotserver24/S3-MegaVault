@@ -110,7 +110,7 @@ export default function DocsHomePage() {
                 Dashboard
               </Link>
               <Link
-                href="https://github.com/yourusername/megavault-open-source"
+                href="https://github.com/iotserver24/S3-MegaVault"
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-slate-900 hover:bg-slate-800"
                 target="_blank"
                 rel="noopener noreferrer"

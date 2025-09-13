@@ -17,11 +17,11 @@ const contributionSteps = [
     title: 'Fork and Clone',
     description: 'Fork the repository and clone it to your local machine.',
     code: `# Fork the repository on GitHub, then clone your fork
-git clone https://github.com/YOUR_USERNAME/megavault-open-source.git
-cd megavault-open-source
+git clone https://github.com/YOUR_USERNAME/S3-MegaVault.git
+cd S3-MegaVault
 
 # Add the original repository as upstream
-git remote add upstream https://github.com/iotserver24/megavault-open-source.git`,
+git remote add upstream https://github.com/iotserver24/S3-MegaVault.git`,
     language: 'bash',
   },
   {
@@ -69,7 +69,7 @@ git push origin feature/your-feature-name`,
 
 export default function ContributingPage() {
   return (
-    <div className="prose prose-slate max-w-none">
+    <div className="prose prose-slate max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-li:text-gray-700 prose-strong:text-gray-900">
       <div className="not-prose mb-8">
         <h1 className="text-4xl font-bold text-slate-900 mb-4">Contributing Guide</h1>
         <p className="text-xl text-slate-600">

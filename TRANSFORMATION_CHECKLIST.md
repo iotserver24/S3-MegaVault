@@ -60,7 +60,7 @@
 - [x] Simplified user data handling
 
 ### 9. Package.json Updates
-- [x] Updated package name to `megavault-open-source`
+- [x] Updated package name to `s3-megavault`
 - [x] Updated version to `1.0.0`
 - [x] Added description for open source project
 - [x] Removed `razorpay` dependency

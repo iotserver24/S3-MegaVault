@@ -19,11 +19,13 @@ import {
   ShareIcon,
   GlobeAltIcon,
   LockClosedIcon,
-  PencilIcon
+  PencilIcon,
+  BookOpenIcon
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import { formatFileSize } from '../utils/formatFileSize';
 import { throttle, debounce } from 'lodash';
+import DashboardVersionInfo from '../../components/DashboardVersionInfo';
 
 // Extend the default session types
 declare module 'next-auth' {
@@ -314,7 +316,7 @@ export default function Dashboard() {
   };
 
   // Helper function to traverse file tree for folder uploads
-  const traverseFileTree = async (item: any, path: string = '', allFiles: File[]): Promise<void> => {
+  const traverseFileTree = async (item: any, path: string = '', allFiles: File[], isRootEntry = false): Promise<void> => {
     return new Promise<void>((resolve, reject) => {
       if (item.isFile) {
         // Get the file and create a wrapper with relative path info
@@ -346,9 +348,13 @@ export default function Dashboard() {
             }
             
             try {
-              const promises = entries.map(entry => 
-                traverseFileTree(entry, path ? `${path}/${item.name}` : item.name, allFiles)
-              );
+              const promises = entries.map(entry => {
+                // For root directory entries (when dragging a folder),
+                // start with the folder name as the base path
+                // For nested entries, append to the existing path
+                const newPath = isRootEntry ? item.name : (path ? `${path}/${item.name}` : item.name);
+                return traverseFileTree(entry, newPath, allFiles, false);
+              });
               await Promise.all(promises);
               readEntries(); // Continue reading if there are more entries
             } catch (error) {
@@ -552,7 +558,9 @@ export default function Dashboard() {
             if (item.kind === 'file') {
               const entry = item.webkitGetAsEntry();
               if (entry) {
-                filePromises.push(traverseFileTree(entry, '', allFiles));
+                // For drag and drop, start with empty path and mark as root entry
+                // This will ensure folder structure is preserved correctly
+                filePromises.push(traverseFileTree(entry, '', allFiles, true));
               }
             }
           }
@@ -927,7 +935,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200 dark-theme">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
@@ -1026,6 +1034,20 @@ export default function Dashboard() {
               </label>
             </div>
           </nav>
+
+          {/* Docs Button */}
+          <div className="px-4 py-2">
+            <button
+              onClick={() => router.push('/docs')}
+              className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md"
+            >
+              <BookOpenIcon className="h-5 w-5 mr-3" />
+              Docs
+            </button>
+          </div>
+
+          {/* Version Info */}
+          <DashboardVersionInfo />
 
           {/* Sign Out */}
           <div className="px-4 py-4 border-t dark:border-gray-700">

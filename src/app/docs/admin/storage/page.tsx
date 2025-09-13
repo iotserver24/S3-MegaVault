@@ -6,6 +6,7 @@ const tableOfContents = [
   { id: 'cloudflare-r2', title: 'Cloudflare R2 Setup' },
   { id: 'aws-s3', title: 'AWS S3 Setup' },
   { id: 'configuration', title: 'Storage Configuration' },
+  { id: 'access-modes', title: 'Storage Access Modes' },
   { id: 'file-management', title: 'File Management' },
   { id: 'cdn-integration', title: 'CDN Integration' },
   { id: 'backup-strategy', title: 'Backup Strategy' },
@@ -423,6 +424,204 @@ STORAGE_OPTIMIZED_DELIVERY=true          # Enable optimized delivery`}
   ]
 }`}
         </CodeBlock>
+      </section>
+
+      <section id="access-modes">
+        <h2>Storage Access Modes</h2>
+        <p>
+          MegaVault provides configurable storage access modes to support different deployment scenarios 
+          and security requirements. Administrators can choose between complete bucket access or 
+          folder-restricted access based on their organizational needs.
+        </p>
+
+        <h3>Available Access Modes</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 not-prose">
+          <Card title="Bucket Mode" description="Complete access to the entire storage bucket">
+            <div className="text-sm space-y-2">
+              <p><strong>Use Case:</strong> Single-tenant deployments, personal cloud storage</p>
+              <p><strong>Storage Path:</strong> Files stored directly at bucket root</p>
+              <p><strong>Benefits:</strong></p>
+              <ul className="text-xs space-y-1 ml-4">
+                <li>• Maximum flexibility for file organization</li>
+                <li>• Simplified file path structure</li>
+                <li>• Easier migration from other systems</li>
+                <li>• No folder-based restrictions</li>
+              </ul>
+            </div>
+          </Card>
+          
+          <Card title="Folder Mode" description="Restricted access to a specific folder within the bucket">
+            <div className="text-sm space-y-2">
+              <p><strong>Use Case:</strong> Multi-tenant systems, shared storage buckets</p>
+              <p><strong>Storage Path:</strong> Files isolated within specified folder</p>
+              <p><strong>Benefits:</strong></p>
+              <ul className="text-xs space-y-1 ml-4">
+                <li>• Enhanced security and isolation</li>
+                <li>• Better organization for shared buckets</li>
+                <li>• Prevents accidental data access</li>
+                <li>• Easier data management and backups</li>
+              </ul>
+            </div>
+          </Card>
+        </div>
+
+        <h3>Configuration Options</h3>
+        <CodeBlock language="bash" title="Storage Access Environment Variables">
+{`# ================================
+# Storage Access Configuration
+# ================================
+
+# Choose between "bucket" (complete access) or "folder" (folder-specific access)
+STORAGE_ACCESS_MODE=bucket              # Options: bucket | folder
+
+# Folder name for isolated storage (only used when STORAGE_ACCESS_MODE=folder)
+USER_STORAGE_FOLDER=single-user-folder  # Can be any valid folder name
+
+# ================================
+# Examples for Different Scenarios
+# ================================
+
+# Single User / Personal Deployment (Recommended)
+STORAGE_ACCESS_MODE=bucket
+# USER_STORAGE_FOLDER not needed in bucket mode
+
+# Multi-User / Shared Bucket Deployment
+STORAGE_ACCESS_MODE=folder
+USER_STORAGE_FOLDER=production-vault
+
+# Development / Testing Environment
+STORAGE_ACCESS_MODE=folder
+USER_STORAGE_FOLDER=dev-environment`}
+        </CodeBlock>
+
+        <h3>File Organization Examples</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 not-prose">
+          <div>
+            <h4 className="font-semibold text-slate-900 mb-2">🪣 Bucket Mode Structure</h4>
+            <CodeBlock language="text">
+{`your-bucket/
+├── documents/
+│   ├── report.pdf
+│   └── presentation.pptx
+├── photos/
+│   ├── vacation/
+│   │   └── beach.jpg
+│   └── family.jpg
+├── projects/
+│   └── website.zip
+└── backup.tar.gz`}
+            </CodeBlock>
+          </div>
+          
+          <div>
+            <h4 className="font-semibold text-slate-900 mb-2">📁 Folder Mode Structure</h4>
+            <CodeBlock language="text">
+{`your-bucket/
+├── other-app-data/
+├── shared-resources/
+└── single-user-folder/     ← MegaVault files
+    ├── documents/
+    │   ├── report.pdf
+    │   └── presentation.pptx
+    ├── photos/
+    │   ├── vacation/
+    │   │   └── beach.jpg
+    │   └── family.jpg
+    ├── projects/
+    │   └── website.zip
+    └── backup.tar.gz`}
+            </CodeBlock>
+          </div>
+        </div>
+
+        <h3>Deployment Recommendations</h3>
+        <div className="space-y-4 not-prose">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 className="font-semibold text-blue-900 mb-2">🏠 Personal/Single-User Deployments</h4>
+            <div className="text-blue-800 text-sm space-y-1">
+              <p><strong>Recommended:</strong> <code>STORAGE_ACCESS_MODE=bucket</code></p>
+              <p><strong>Reason:</strong> Maximum flexibility and simpler file management</p>
+              <p><strong>Security:</strong> Entire bucket is dedicated to MegaVault</p>
+            </div>
+          </div>
+          
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <h4 className="font-semibold text-green-900 mb-2">🏢 Enterprise/Multi-User Deployments</h4>
+            <div className="text-green-800 text-sm space-y-1">
+              <p><strong>Recommended:</strong> <code>STORAGE_ACCESS_MODE=folder</code></p>
+              <p><strong>Reason:</strong> Better isolation and organization</p>
+              <p><strong>Security:</strong> Prevents access to other data in shared bucket</p>
+            </div>
+          </div>
+          
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <h4 className="font-semibold text-yellow-900 mb-2">🧪 Development/Testing</h4>
+            <div className="text-yellow-800 text-sm space-y-1">
+              <p><strong>Recommended:</strong> <code>STORAGE_ACCESS_MODE=folder</code></p>
+              <p><strong>Reason:</strong> Isolate test data from production</p>
+              <p><strong>Folder:</strong> Use descriptive names like <code>dev-environment</code></p>
+            </div>
+          </div>
+        </div>
+
+        <h3>Migration Between Modes</h3>
+        <Alert type="warning" title="Important: Data Migration Required">
+          Changing storage access modes requires migrating existing files to match the new structure. 
+          Plan this change carefully and ensure you have proper backups before proceeding.
+        </Alert>
+
+        <CodeBlock language="bash" title="Migration Scripts">
+{`#!/bin/bash
+# migrate-storage-mode.sh
+
+SOURCE_BUCKET="your-bucket-name"
+FOLDER_NAME="single-user-folder"
+
+# Migrating FROM bucket mode TO folder mode
+echo "Migrating to folder mode..."
+aws s3 sync s3://$SOURCE_BUCKET/ s3://$SOURCE_BUCKET/$FOLDER_NAME/ \
+    --exclude "$FOLDER_NAME/*" \
+    --delete
+
+# Verify migration
+echo "Verifying migration..."
+aws s3 ls s3://$SOURCE_BUCKET/$FOLDER_NAME/ --recursive
+
+# Migrating FROM folder mode TO bucket mode
+echo "Migrating to bucket mode..."
+aws s3 sync s3://$SOURCE_BUCKET/$FOLDER_NAME/ s3://$SOURCE_BUCKET/ \
+    --delete
+
+# Remove empty folder
+aws s3 rm s3://$SOURCE_BUCKET/$FOLDER_NAME/ --recursive
+
+echo "Migration completed. Update your environment variables:"
+echo "STORAGE_ACCESS_MODE=bucket  # or folder"
+echo "# USER_STORAGE_FOLDER=single-user-folder  # only for folder mode"`}
+        </CodeBlock>
+
+        <h3>Security Considerations</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 not-prose">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <h4 className="font-semibold text-red-900 mb-2">⚠️ Bucket Mode Security</h4>
+            <ul className="text-red-800 text-sm space-y-1">
+              <li>• Entire bucket is accessible to MegaVault</li>
+              <li>• Ensure bucket is dedicated to MegaVault only</li>
+              <li>• Use proper IAM policies to restrict access</li>
+              <li>• Monitor bucket-level access logs</li>
+            </ul>
+          </div>
+          
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <h4 className="font-semibold text-green-900 mb-2">✅ Folder Mode Security</h4>
+            <ul className="text-green-800 text-sm space-y-1">
+              <li>• Access limited to specified folder only</li>
+              <li>• Safe for shared storage buckets</li>
+              <li>• Natural data isolation boundary</li>
+              <li>• Easier to implement data retention policies</li>
+            </ul>
+          </div>
+        </div>
       </section>
 
       <section id="file-management">

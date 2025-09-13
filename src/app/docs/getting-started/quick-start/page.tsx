@@ -15,13 +15,13 @@ const quickSetupSteps = [
     title: 'Download MegaVault',
     description: 'Get MegaVault from the official repository or use Docker.',
     code: `# Option 1: Docker (Recommended)
-git clone https://github.com/iotserver24/megavault-open-source.git
-cd megavault-open-source
+git clone https://github.com/iotserver24/S3-MegaVault.git
+cd S3-MegaVault
 docker-compose up -d
 
 # Option 2: Manual Setup
-git clone https://github.com/iotserver24/megavault-open-source.git
-cd megavault-open-source
+git clone https://github.com/iotserver24/S3-MegaVault.git
+cd S3-MegaVault
 npm install`,
     language: 'bash',
   },
@@ -75,7 +75,7 @@ http://localhost:3001/auth/signup
 
 export default function QuickStartPage() {
   return (
-    <div className="prose prose-slate max-w-none">
+    <div className="prose prose-slate max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-li:text-gray-700 prose-strong:text-gray-900">
       <div className="not-prose mb-8">
         <h1 className="text-4xl font-bold text-slate-900 mb-4">Quick Start Guide</h1>
         <p className="text-xl text-slate-600">

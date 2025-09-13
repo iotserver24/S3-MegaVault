@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { signIn, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { FaCloudUploadAlt, FaLock, FaUsers } from 'react-icons/fa';
+import { FaCloudUploadAlt, FaLock, FaUsers, FaBook } from 'react-icons/fa';
 import Link from 'next/link';
 
 export default function LoginPage() {
@@ -40,7 +40,18 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-black flex">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-black flex dark-theme">
+      {/* Docs Button */}
+      <div className="absolute top-4 right-4 z-10">
+        <Link 
+          href="/docs"
+          className="flex items-center gap-2 bg-white/10 backdrop-blur-lg rounded-lg px-4 py-2 text-white hover:bg-white/20 transition-colors border border-white/20"
+        >
+          <FaBook className="text-lg" />
+          <span className="font-medium">Docs</span>
+        </Link>
+      </div>
+
       {/* Left side - Login Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
         <div className="w-full max-w-md">

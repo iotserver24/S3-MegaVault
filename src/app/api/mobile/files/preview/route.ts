@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserFromJWT } from '@/lib/mobile-auth';
-import { getFileStreamAndMeta } from '@/lib/storage';
+import { authenticateMobile } from '@/lib/mobile-auth';
 import { getStorageConfig } from '@/lib/storage';
+import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 
 export async function GET(req: NextRequest) {
   // CORS preflight
@@ -16,23 +16,13 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  const { searchParams } = new URL(req.url);
-  let token = null;
-  const authHeader = req.headers.get('authorization');
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    token = authHeader.replace('Bearer ', '');
-  } else {
-    // Fallback: check for token in query param
-    token = searchParams.get('token');
-  }
-  if (!token) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-  const user = await getUserFromJWT(token);
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // Authenticate user
+  const { user, errorResponse } = await authenticateMobile(req);
+  if (errorResponse) {
+    return errorResponse;
   }
 
+  const { searchParams } = new URL(req.url);
   const key = searchParams.get('key');
   if (!key) {
     return NextResponse.json({ error: 'Missing file key' }, { status: 400 });
@@ -52,18 +42,36 @@ export async function GET(req: NextRequest) {
 
   // Get file stream and metadata
   try {
-    const { stream, contentType, contentLength, fileName } = await getFileStreamAndMeta(key);
-    if (!stream) {
+    const s3Client = new S3Client({
+      region: process.env.S3_REGION || 'auto',
+      endpoint: process.env.S3_ENDPOINT,
+      credentials: {
+        accessKeyId: process.env.S3_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
+      },
+    });
+
+    const command = new GetObjectCommand({
+      Bucket: process.env.S3_BUCKET!,
+      Key: key,
+    });
+
+    const response = await s3Client.send(command);
+    
+    if (!response.Body) {
       return NextResponse.json({ error: 'File not found' }, { status: 404 });
     }
+
     const headers = new Headers({
-      'Content-Type': contentType,
-      'Content-Length': contentLength?.toString() || '',
-      'Content-Disposition': `inline; filename="${fileName}"`,
+      'Content-Type': response.ContentType || 'application/octet-stream',
+      'Content-Length': response.ContentLength?.toString() || '',
+      'Content-Disposition': `inline; filename="${key.split('/').pop()}"`,
       'Access-Control-Allow-Origin': '*',
     });
-    return new NextResponse(stream, { status: 200, headers });
+
+    return new NextResponse(response.Body as ReadableStream, { status: 200, headers });
   } catch (e) {
+    console.error('Preview error:', e);
     return NextResponse.json({ error: 'File not found' }, { status: 404 });
   }
 } 

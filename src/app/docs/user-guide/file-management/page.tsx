@@ -44,7 +44,7 @@ const uploadSteps = [
 
 export default function FileManagementPage() {
   return (
-    <div className="prose prose-slate max-w-none">
+    <div className="prose prose-slate max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-li:text-gray-700 prose-strong:text-gray-900">
       <div className="not-prose mb-8">
         <h1 className="text-4xl font-bold text-slate-900 mb-4">File Management</h1>
         <p className="text-xl text-slate-600">

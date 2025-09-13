@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import Search from './components/Search';
+import VersionInfo from './components/VersionInfo';
 import { 
   ChevronDownIcon,
   ChevronRightIcon,
@@ -93,10 +94,11 @@ function NavigationSection({ item, level = 0 }: { item: NavigationItem; level?: 
   if (hasChildren) {
     return (
       <div className="mb-1">
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-md"
-        >
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-md"
+              title={`Toggle ${item.title} section`}
+            >
           <span>{item.title}</span>
           {isOpen ? (
             <ChevronDownIcon className="w-4 h-4" />
@@ -159,6 +161,7 @@ function NavigationSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () =
           <button
             onClick={onClose}
             className="p-2 text-slate-500 hover:text-slate-700"
+            title="Close navigation menu"
           >
             <XMarkIcon className="w-5 h-5" />
           </button>
@@ -175,6 +178,9 @@ function NavigationSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () =
             <NavigationSection key={section.title} item={section} />
           ))}
         </nav>
+        
+        {/* Version Info */}
+        <VersionInfo className="absolute bottom-0 left-0 right-0 bg-white" />
       </div>
     </>
   );
@@ -184,7 +190,7 @@ export default function DocsLayout({ children }: DocsLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white text-gray-900">
       {/* Header */}
       <header className="sticky top-0 z-30 bg-white border-b border-slate-200">
         <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
@@ -192,6 +198,7 @@ export default function DocsLayout({ children }: DocsLayoutProps) {
             <button
               onClick={() => setSidebarOpen(true)}
               className="p-2 text-slate-500 hover:text-slate-700 lg:hidden"
+              title="Open navigation menu"
             >
               <Bars3Icon className="w-5 h-5" />
             </button>
@@ -220,7 +227,7 @@ export default function DocsLayout({ children }: DocsLayoutProps) {
               Dashboard
             </Link>
             <Link
-              href="https://github.com/yourusername/megavault-open-source"
+              href="https://github.com/iotserver24/S3-MegaVault"
               className="inline-flex items-center px-3 py-1.5 border border-slate-300 text-sm font-medium rounded text-slate-700 bg-white hover:bg-slate-50"
               target="_blank"
               rel="noopener noreferrer"
@@ -243,7 +250,7 @@ export default function DocsLayout({ children }: DocsLayoutProps) {
         
         {/* Main content */}
         <main className="flex-1 lg:ml-80 min-h-screen">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-gray-900">
             {children}
           </div>
         </main>

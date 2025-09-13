@@ -11,11 +11,11 @@ const redis = new Redis({
 });
 
 const s3Client = new S3Client({
-  region: process.env.CLOUDFLARE_R2_REGION || 'auto',
-  endpoint: process.env.CLOUDFLARE_R2_ENDPOINT,
+  region: process.env.S3_REGION || 'auto',
+  endpoint: process.env.S3_ENDPOINT,
   credentials: {
-    accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY!,
+    accessKeyId: process.env.S3_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
   },
 });
 
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
 
     // First get the existing object metadata
     const headCommand = new HeadObjectCommand({
-      Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
+      Bucket: process.env.S3_BUCKET!,
       Key: key,
     });
 
@@ -62,8 +62,8 @@ export async function POST(req: Request) {
 
     // Copy the object onto itself with new metadata
     const copyCommand = new CopyObjectCommand({
-      Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
-      CopySource: `${process.env.CLOUDFLARE_R2_BUCKET}/${key}`,
+      Bucket: process.env.S3_BUCKET!,
+      CopySource: `${process.env.S3_BUCKET}/${key}`,
       Key: key,
       Metadata: metadata,
       MetadataDirective: 'REPLACE',

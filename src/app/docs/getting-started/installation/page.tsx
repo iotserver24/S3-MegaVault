@@ -28,8 +28,8 @@ sudo apt install docker.io docker-compose
   {
     title: 'Clone MegaVault Repository',
     description: 'Download the MegaVault source code from GitHub.',
-    code: `git clone https://github.com/iotserver24/megavault-open-source.git
-cd megavault-open-source`,
+    code: `git clone https://github.com/iotserver24/S3-MegaVault.git
+cd S3-MegaVault`,
     language: 'bash',
   },
   {
@@ -104,8 +104,8 @@ sudo systemctl enable redis-server
   {
     title: 'Clone and Install Dependencies',
     description: 'Download MegaVault and install all required packages.',
-    code: `git clone https://github.com/iotserver24/megavault-open-source.git
-cd megavault-open-source
+    code: `git clone https://github.com/iotserver24/S3-MegaVault.git
+cd S3-MegaVault
 
 # Install dependencies
 npm install
@@ -138,7 +138,7 @@ npm run dev`,
 
 export default function InstallationPage() {
   return (
-    <div className="prose prose-slate max-w-none">
+    <div className="prose prose-slate max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-li:text-gray-700 prose-strong:text-gray-900">
       <div className="not-prose mb-8">
         <h1 className="text-4xl font-bold text-slate-900 mb-4">Installation Guide</h1>
         <p className="text-xl text-slate-600">

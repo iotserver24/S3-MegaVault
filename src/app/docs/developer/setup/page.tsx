@@ -18,8 +18,8 @@ const setupSteps = [
     title: 'Clone Repository',
     description: 'Clone the MegaVault repository and navigate to the project directory.',
     code: `# Clone the repository
-git clone https://github.com/iotserver24/megavault-open-source.git
-cd megavault-open-source
+git clone https://github.com/iotserver24/S3-MegaVault.git
+cd S3-MegaVault
 
 # Check Node.js version (should be 18+ or 20+)
 node --version
@@ -71,7 +71,7 @@ redis-cli ping
 
 export default function DevelopmentSetupPage() {
   return (
-    <div className="prose prose-slate max-w-none">
+    <div className="prose prose-slate max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-li:text-gray-700 prose-strong:text-gray-900">
       <div className="not-prose mb-8">
         <h1 className="text-4xl font-bold text-slate-900 mb-4">Development Setup</h1>
         <p className="text-xl text-slate-600">
