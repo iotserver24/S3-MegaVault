@@ -11,7 +11,6 @@ interface DragDropZoneProps {
   accept?: string;
   multiple?: boolean;
   maxFiles?: number;
-  maxSize?: number; // in bytes
 }
 
 const DragDropZone: React.FC<DragDropZoneProps> = ({
@@ -22,7 +21,6 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
   accept,
   multiple = true,
   maxFiles = 100,
-  maxSize = 100 * 1024 * 1024, // 100MB default
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [dragCounter, setDragCounter] = useState(0);
@@ -38,13 +36,8 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
       return fileArray.slice(0, maxFiles);
     }
 
-    // Check file size and type
+    // Check file type only (no size limits)
     fileArray.forEach((file) => {
-      if (file.size > maxSize) {
-        console.warn(`File ${file.name} is too large (max ${maxSize / 1024 / 1024}MB)`);
-        return;
-      }
-
       if (accept) {
         const acceptedTypes = accept.split(',').map(type => type.trim());
         const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
@@ -67,7 +60,7 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
     });
 
     return validFiles;
-  }, [maxFiles, maxSize, accept]);
+  }, [maxFiles, accept]);
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -168,8 +161,8 @@ const DragDropZone: React.FC<DragDropZoneProps> = ({
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {multiple ? 'Multiple files allowed' : 'Single file only'}
-                {maxSize && ` • Max size: ${Math.round(maxSize / 1024 / 1024)}MB`}
                 {maxFiles && ` • Max files: ${maxFiles}`}
+                • No size limit
               </p>
             </div>
           </div>

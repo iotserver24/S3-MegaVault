@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { authenticateMobile, corsHeaders } from '@/lib/mobile-auth';
 
+// Configure route for large file uploads
+export const runtime = 'nodejs';
+export const maxDuration = 300; // 5 minutes for large file uploads
+
 const s3Client = new S3Client({
   region: process.env.S3_REGION || 'auto',
   endpoint: process.env.S3_ENDPOINT,
@@ -11,10 +15,8 @@ const s3Client = new S3Client({
   },
 });
 
-// Updated route configuration for Next.js 14+
+// Additional route configuration
 export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
-export const maxDuration = 60; // 60 seconds timeout for file uploads
 
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
@@ -36,13 +38,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check for subscription status
-    if (user.subscriptionStatus !== 'active' && user.planType !== 'base') {
-      return NextResponse.json(
-        { error: 'Your subscription is inactive. Please renew your subscription on the website.' }, 
-        { status: 403, headers: corsHeaders }
-      );
-    }
+    // User is authenticated and authorized
 
     const formData = await req.formData();
     const file = formData.get('file') as File;

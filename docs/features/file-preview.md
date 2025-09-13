@@ -109,7 +109,7 @@ MegaVault provides a powerful file preview system that supports a wide range of 
 - Content security policies enforced
 - Safe rendering of HTML content
 - XSS protection
-- File size limits enforced
+- No file size restrictions
 
 ### Performance
 - Optimized loading for large files
@@ -122,7 +122,7 @@ MegaVault provides a powerful file preview system that supports a wide range of 
 The preview system can be configured through environment variables:
 
 ```env
-MAX_PREVIEW_SIZE=10485760  # Maximum file size for preview (10MB)
+MAX_PREVIEW_SIZE=104857600  # Maximum file size for preview (100MB)
 ALLOWED_PREVIEW_TYPES=*    # Restrict preview to specific file types
 CACHE_PREVIEW=true        # Enable/disable preview caching
 ```

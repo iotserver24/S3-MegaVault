@@ -219,12 +219,8 @@ isPublic: false`}
 }`}
         </CodeBlock>
 
-        <h3>File Size Limits</h3>
-        <ul>
-          <li><strong>Free Plan:</strong> 10 MB per file</li>
-          <li><strong>Pro Plan:</strong> 100 MB per file</li>
-          <li><strong>Enterprise:</strong> 1 GB per file</li>
-        </ul>
+        <h3>File Upload</h3>
+        <p>All plans support unlimited file uploads with no size restrictions.</p>
       </section>
 
       <section id="get-file">

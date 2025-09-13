@@ -133,7 +133,7 @@ There are three ways to start editing a file:
 
 3. **Content Security:**
    - Input sanitization
-   - Size limits
+   - File type validation
    - Format validation
 
 ### Error Handling
@@ -148,7 +148,7 @@ There are three ways to start editing a file:
 Editor settings can be configured through environment variables:
 
 ```env
-MAX_EDIT_SIZE=1048576     # Maximum file size for editing (1MB)
+MAX_EDIT_SIZE=10485760    # Maximum file size for editing (10MB)
 AUTOSAVE_INTERVAL=5000    # Autosave interval in milliseconds
 ALLOWED_EDIT_TYPES=*      # Restrict editing to specific file types
 ```

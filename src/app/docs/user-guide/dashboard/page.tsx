@@ -195,14 +195,6 @@ export default function DashboardPage() {
           <li><strong>Error Handling:</strong> Retry failed uploads automatically</li>
         </ul>
 
-        <Alert type="warning" title="File Size Limits">
-          Maximum file size depends on your configuration. Default limits:
-          <ul className="mt-2">
-            <li>Individual file: 100 MB</li>
-            <li>Batch upload: 500 MB total</li>
-            <li>These limits can be adjusted by administrators</li>
-          </ul>
-        </Alert>
       </section>
 
       <section id="storage-info">
@@ -214,10 +206,9 @@ export default function DashboardPage() {
         <h3>Storage Metrics</h3>
         <ul>
           <li><strong>Used Space:</strong> Total storage currently in use</li>
-          <li><strong>Available Space:</strong> Remaining storage capacity</li>
-          <li><strong>Total Allocation:</strong> Your total storage limit</li>
           <li><strong>File Count:</strong> Number of files stored</li>
           <li><strong>Folder Count:</strong> Number of folders created</li>
+          <li><strong>Recent Activity:</strong> Latest uploads and changes</li>
         </ul>
 
         <h3>Visual Indicators</h3>

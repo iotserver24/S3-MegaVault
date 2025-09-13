@@ -231,7 +231,7 @@ METRICS_ENABLED=true`}
   },
   "storage": {
     "provider": "r2",
-    "maxFileSize": 104857600,
+    "unlimitedUploads": true,
     "allowedTypes": ["image/*", "application/pdf", "text/*"],
     "thumbnailSizes": [150, 300, 600]
   },
@@ -404,7 +404,7 @@ echo "[$DATE] Health check completed" >> $LOG_FILE`}
         <h3>Performance Issues</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 not-prose">
           <Card title="Slow Response Times">
-            <p className="text-sm text-slate-600 mb-2"><strong>Symptoms:</strong> API responses taking > 5 seconds</p>
+            <p className="text-sm text-slate-600 mb-2"><strong>Symptoms:</strong> API responses taking {'>'} 5 seconds</p>
             <p className="text-sm text-slate-600 mb-2"><strong>Solutions:</strong></p>
             <ul className="text-xs space-y-1">
               <li>Check database query performance</li>
@@ -415,7 +415,7 @@ echo "[$DATE] Health check completed" >> $LOG_FILE`}
           </Card>
           
           <Card title="High Memory Usage">
-            <p className="text-sm text-slate-600 mb-2"><strong>Symptoms:</strong> Memory usage > 80%</p>
+            <p className="text-sm text-slate-600 mb-2"><strong>Symptoms:</strong> Memory usage {'>'} 80%</p>
             <p className="text-sm text-slate-600 mb-2"><strong>Solutions:</strong></p>
             <ul className="text-xs space-y-1">
               <li>Check for memory leaks in logs</li>
@@ -446,7 +446,7 @@ echo "[$DATE] Health check completed" >> $LOG_FILE`}
               <li>Check storage service credentials</li>
               <li>Verify bucket permissions</li>
               <li>Review CORS configuration</li>
-              <li>Check file size limits</li>
+              <li>Check file integrity</li>
             </ul>
           </Card>
         </div>

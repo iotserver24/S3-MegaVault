@@ -219,7 +219,7 @@ Complete URL components:
         <ul>
           <li><strong>Count-Based Limits:</strong> Maximum number of downloads (1, 5, 10, 25, 100)</li>
           <li><strong>User-Based Limits:</strong> Unique users who can download</li>
-          <li><strong>Size-Based Limits:</strong> Total bandwidth allocation</li>
+          <li><strong>Time-Based Limits:</strong> Link expiration settings</li>
           <li><strong>Reset Options:</strong> Reset counters or extend limits</li>
           <li><strong>Exceeded Behavior:</strong> Block access when limits reached</li>
         </ul>
