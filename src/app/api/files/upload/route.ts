@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { authOptions } from '@/lib/auth';
+import { getStorageConfig } from '@/lib/storage';
 
 const s3Client = new S3Client({
   region: process.env.CLOUDFLARE_R2_REGION || 'auto',
@@ -24,6 +25,7 @@ export async function POST(req: Request) {
     const formData = await req.formData();
     const file = formData.get('file') as File;
     const folder = formData.get('folder') as string | null;
+    const relativePath = formData.get('relativePath') as string | null;
 
     if (!file) {
       return NextResponse.json(
@@ -32,11 +34,36 @@ export async function POST(req: Request) {
       );
     }
 
-    // Construct the file path
-    const basePath = `${session.user.folderId}/`;
-    const filePath = folder 
-      ? `${basePath}${folder}/${file.name}`
-      : `${basePath}${file.name}`;
+    // Get storage configuration
+    const storageConfig = getStorageConfig();
+    const userFolderId = storageConfig.getUserFolderId();
+    
+    // Construct the file path based on storage mode
+    let filePath: string;
+    
+    if (storageConfig.mode === 'bucket') {
+      // Bucket mode: store files at bucket root
+      if (relativePath && relativePath !== file.name) {
+        // Handle folder uploads with relative paths
+        filePath = relativePath;
+      } else if (folder) {
+        filePath = `${folder}/${file.name}`;
+      } else {
+        filePath = file.name;
+      }
+    } else {
+      // Folder mode: store files within user folder
+      const basePath = userFolderId ? `${userFolderId}/` : '';
+      
+      if (relativePath && relativePath !== file.name) {
+        // Handle folder uploads with relative paths
+        filePath = `${basePath}${relativePath}`;
+      } else if (folder) {
+        filePath = `${basePath}${folder}/${file.name}`;
+      } else {
+        filePath = `${basePath}${file.name}`;
+      }
+    }
 
     console.log('Uploading file:', {
       path: filePath,

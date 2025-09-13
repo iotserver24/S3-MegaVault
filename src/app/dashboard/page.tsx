@@ -115,6 +115,9 @@ export default function Dashboard() {
     planType: 'unlimited'
   });
   
+  // Simple drag and drop state
+  const [isDragOver, setIsDragOver] = useState(false);
+  
   const handleScroll = useRef(
     throttle(() => {
       // Any scroll-related logic can go here
@@ -168,6 +171,7 @@ export default function Dashboard() {
       }
     }
   }, []);
+
 
   // Toggle dark mode
   const toggleDarkMode = () => {
@@ -242,7 +246,7 @@ export default function Dashboard() {
             timestamp: Date.now()
           }
         }));
-      } catch (err) {
+      } catch (err: any) {
         if (err.name === 'AbortError') {
           console.error('Request timed out');
           toast.error('Request timed out. Please try again.');
@@ -309,6 +313,77 @@ export default function Dashboard() {
     return selectedFiles;
   };
 
+  // Helper function to traverse file tree for folder uploads
+  const traverseFileTree = async (item: any, path: string = '', allFiles: File[]): Promise<void> => {
+    return new Promise<void>((resolve, reject) => {
+      if (item.isFile) {
+        // Get the file and create a wrapper with relative path info
+        item.file((file: File) => {
+          // Create a new file object with custom relativePath property
+          const fileWithPath = new File([file], file.name, {
+            type: file.type,
+            lastModified: file.lastModified
+          });
+          
+          // Add the relative path as a custom property
+          Object.defineProperty(fileWithPath, 'customRelativePath', {
+            value: path ? `${path}/${file.name}` : file.name,
+            writable: false,
+            enumerable: true
+          });
+          
+          allFiles.push(fileWithPath);
+          resolve();
+        }, reject);
+      } else if (item.isDirectory) {
+        // Read directory contents
+        const dirReader = item.createReader();
+        const readEntries = () => {
+          dirReader.readEntries(async (entries: any[]) => {
+            if (entries.length === 0) {
+              resolve();
+              return;
+            }
+            
+            try {
+              const promises = entries.map(entry => 
+                traverseFileTree(entry, path ? `${path}/${item.name}` : item.name, allFiles)
+              );
+              await Promise.all(promises);
+              readEntries(); // Continue reading if there are more entries
+            } catch (error) {
+              reject(error);
+            }
+          }, reject);
+        };
+        readEntries();
+      } else {
+        resolve();
+      }
+    });
+  };
+
+  // Process files with their relative paths preserved
+  const processFilesWithPaths = (files: File[]) => {
+    if (!files?.length) return;
+    
+    // Show upload dialog immediately
+    setShowUploadDialog(true);
+    setUploading(true);
+    
+    // Initialize upload progress with all files including their paths
+    const initialProgress = files.map(file => ({
+      fileName: file.name,
+      progress: 0,
+      status: 'pending' as const,
+      relativePath: (file as any).customRelativePath || (file as any).webkitRelativePath || file.name
+    }));
+    
+    setUploadProgress(initialProgress);
+
+    return files;
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = processFiles(e.target.files);
     if (!selectedFiles) return;
@@ -323,6 +398,9 @@ export default function Dashboard() {
 
   const uploadFiles = async (selectedFiles: globalThis.File[]) => {
     try {
+      console.log('Starting upload for files:', selectedFiles.map(f => f.name));
+      console.log('Upload progress state:', uploadProgress);
+      
       // Process files in batches of 10
       const batchSize = 10;
       for (let i = 0; i < selectedFiles.length; i += batchSize) {
@@ -334,8 +412,12 @@ export default function Dashboard() {
           // Add folder path information
           let relativePath = '';
           
-          // Check for webkitRelativePath first (folder upload)
-          if ('webkitRelativePath' in file && file.webkitRelativePath) {
+          // Check for customRelativePath first (drag & drop folder upload)
+          if ((file as any).customRelativePath) {
+            relativePath = (file as any).customRelativePath;
+          }
+          // Check for webkitRelativePath (folder input upload)
+          else if ('webkitRelativePath' in file && file.webkitRelativePath) {
             relativePath = file.webkitRelativePath;
           } 
           // Then check uploadProgress if available
@@ -400,15 +482,16 @@ export default function Dashboard() {
               xhr.send(formData);
             });
 
-          } catch (error) {
-            console.error('Error uploading file:', error);
-            setUploadProgress(prev => prev.map((p, i) => 
-              i === index ? { ...p, status: 'error', error: 'Upload failed' } : p
-            ));
-          }
+            } catch (error: any) {
+              console.error('Error uploading file:', error);
+              console.error('File details:', { name: file.name, size: file.size, type: file.type });
+              setUploadProgress(prev => prev.map((p, i) => 
+                i === index ? { ...p, status: 'error', error: `Upload failed: ${error.message || 'Unknown error'}` } : p
+              ));
+            }
         }));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload error:', error);
       toast.error('Failed to upload files');
     } finally {
@@ -422,6 +505,95 @@ export default function Dashboard() {
       }
     }
   };
+
+  // Enhanced drag and drop for current folder with counter to prevent flickering
+  useEffect(() => {
+    let dragCounter = 0;
+
+    const handleDragEnter = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter++;
+      if (e.dataTransfer?.types.includes('Files')) {
+        setIsDragOver(true);
+      }
+    };
+
+    const handleDragLeave = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter--;
+      if (dragCounter === 0) {
+        setIsDragOver(false);
+      }
+    };
+
+    const handleDragOver = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    const handleDrop = async (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter = 0;
+      setIsDragOver(false);
+
+      // Use DataTransferItems API to support folder uploads
+      const items = e.dataTransfer?.items;
+      if (items && items.length > 0) {
+        try {
+          const allFiles: File[] = [];
+          const filePromises: Promise<void>[] = [];
+
+          // Process each item (file or folder)
+          for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            if (item.kind === 'file') {
+              const entry = item.webkitGetAsEntry();
+              if (entry) {
+                filePromises.push(traverseFileTree(entry, '', allFiles));
+              }
+            }
+          }
+
+          // Wait for all files to be collected
+          await Promise.all(filePromises);
+
+          if (allFiles.length > 0) {
+            // Process files with their relative paths preserved
+            const processedFiles = processFilesWithPaths(allFiles);
+            if (processedFiles) {
+              await uploadFiles(processedFiles);
+            }
+          }
+        } catch (error) {
+          console.error('Error processing dropped items:', error);
+          // Fallback to regular file processing
+          const files = e.dataTransfer?.files;
+          if (files && files.length > 0) {
+            const processedFiles = processFiles(files);
+            if (processedFiles) {
+              await uploadFiles(processedFiles);
+            }
+          }
+        }
+      }
+    };
+
+    // Add event listeners to the document to capture all drag events
+    document.addEventListener('dragenter', handleDragEnter);
+    document.addEventListener('dragleave', handleDragLeave);
+    document.addEventListener('dragover', handleDragOver);
+    document.addEventListener('drop', handleDrop);
+
+    return () => {
+      document.removeEventListener('dragenter', handleDragEnter);
+      document.removeEventListener('dragleave', handleDragLeave);
+      document.removeEventListener('dragover', handleDragOver);
+      document.removeEventListener('drop', handleDrop);
+    };
+  }, [uploadFiles]);
 
   const handleDelete = async (key: string) => {
     try {
@@ -712,6 +884,8 @@ export default function Dashboard() {
     setShowRenameDialog(true);
   };
 
+
+
   // Update the folder click handler for better perceived performance
   const handleFolderClick = (folderKey: string) => {
     // Get folder path from key
@@ -884,6 +1058,23 @@ export default function Dashboard() {
         </div>
 
         <main className="p-4 sm:p-6 lg:p-8">
+          {/* Simple Drag Overlay */}
+          {isDragOver && (
+            <div className="fixed inset-0 z-50 bg-blue-500/20 dark:bg-blue-500/30 flex items-center justify-center pointer-events-none">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-8 shadow-xl border-2 border-dashed border-blue-500 dark:border-blue-400">
+                <div className="text-center">
+                  <CloudArrowUpIcon className="h-16 w-16 text-blue-500 dark:text-blue-400 mx-auto mb-4" />
+                  <p className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                    Drop files here to upload
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Release to start uploading to {currentFolder ? `/${currentFolder}` : 'root folder'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Search and actions */}
           <div className="mb-6 flex items-center justify-between">
             <div className="relative w-full max-w-md">
@@ -941,6 +1132,7 @@ export default function Dashboard() {
               <h2 className="text-lg font-medium text-gray-700 dark:text-gray-200">
                 Files
               </h2>
+
             </div>
             <div className="overflow-x-auto">
               <div className="inline-block min-w-full align-middle">
@@ -1020,7 +1212,10 @@ export default function Dashboard() {
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {/* Only render visible items for better performance */}
                       {memoizedFilteredFiles.current.slice(0, 100).map((file) => (
-                        <tr key={file.key} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <tr 
+                          key={file.key} 
+                          className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                        >
                           <td className="px-6 py-4">
                             <div className="flex items-start">
                               {file.type === 'folder' ? (
@@ -1122,13 +1317,7 @@ export default function Dashboard() {
                                 
                                 {selectedFile?.key === file.key && (
                                   <div 
-                                    className="fixed w-48 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 z-[999]"
-                                    style={{
-                                      position: 'fixed',
-                                      left: '50%',
-                                      top: '40%',
-                                      transform: 'translate(-50%, -50%)'
-                                    }}
+                                    className="fixed w-48 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 z-[999] left-1/2 top-2/5 -translate-x-1/2 -translate-y-1/2"
                                     onClick={(e) => e.stopPropagation()}
                                   >
                                     <div className="py-1" role="menu">

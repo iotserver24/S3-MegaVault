@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 import { authOptions } from '@/lib/auth';
+import { getStorageConfig } from '@/lib/storage';
 
 export async function GET() {
   try {
@@ -34,11 +35,15 @@ export async function GET() {
     // by implementing file system scanning or simple Redis stats
     let usedStorage = 0;
 
+    // Get storage configuration
+    const storageConfig = getStorageConfig();
+    const userFolderId = storageConfig.getUserFolderId();
+    
     // Return user profile for single-user system
     return NextResponse.json({
       email: userEmail,
       fullName: '', // Static for single user
-      folderId: 'single-user-folder',
+      folderId: userFolderId,
       createdAt: new Date().toISOString(), // Static for single user
       updatedAt: new Date().toISOString(), // Static for single user  
       storageLimit: defaultStorageLimitGB,

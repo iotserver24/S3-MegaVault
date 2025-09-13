@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { authenticateMobile, corsHeaders } from '@/lib/mobile-auth';
+import { getStorageConfig } from '@/lib/storage';
 
 const s3Client = new S3Client({
   region: process.env.CLOUDFLARE_R2_REGION || 'auto',
@@ -31,6 +32,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Get storage configuration
+    const storageConfig = getStorageConfig();
+    const userFolderId = storageConfig.getUserFolderId();
+
     // Parse request body
     const { folderName, parentFolder } = await req.json();
 
@@ -53,22 +58,35 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Construct the folder path
-    let folderPath = `${user.folderId}/`;
+    // Construct the folder path based on storage mode
+    let folderPath: string;
     
     if (parentFolder) {
-      // Make sure parent folder belongs to the user
-      if (!parentFolder.startsWith(user.folderId)) {
+      // Make sure parent folder belongs to the user based on storage mode
+      const hasParentAccess = storageConfig.mode === 'bucket' 
+        ? true // In bucket mode, user has access to all folders
+        : parentFolder.startsWith(userFolderId);
+      
+      if (!hasParentAccess) {
         return NextResponse.json(
           { error: 'Invalid parent folder' },
           { status: 400, headers: corsHeaders }
         );
       }
-      // Ensure there's a separator between the parent path and the new folder name
-      const properlySeparatedParent = parentFolder.endsWith('/') ? parentFolder : `${parentFolder}/`;
-      folderPath = `${properlySeparatedParent}${sanitizedFolderName}/`;
+      
+      if (storageConfig.mode === 'bucket') {
+        const properlySeparatedParent = parentFolder.endsWith('/') ? parentFolder : `${parentFolder}/`;
+        folderPath = `${properlySeparatedParent}${sanitizedFolderName}/`;
+      } else {
+        const properlySeparatedParent = parentFolder.endsWith('/') ? parentFolder : `${parentFolder}/`;
+        folderPath = `${properlySeparatedParent}${sanitizedFolderName}/`;
+      }
     } else {
-      folderPath = `${user.folderId}/${sanitizedFolderName}/`;
+      if (storageConfig.mode === 'bucket') {
+        folderPath = `${sanitizedFolderName}/`;
+      } else {
+        folderPath = `${userFolderId}/${sanitizedFolderName}/`;
+      }
     }
 
     // Create an empty object to represent the folder

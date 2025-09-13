@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { authOptions } from '@/lib/auth';
+import { getStorageConfig } from '@/lib/storage';
 
 const s3Client = new S3Client({
   region: process.env.CLOUDFLARE_R2_REGION || 'auto',
@@ -16,10 +17,14 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.folderId) {
-      console.error('No session or folderId:', session);
+    if (!session?.user?.email) {
+      console.error('No session or email:', session);
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    // Get storage configuration
+    const storageConfig = getStorageConfig();
+    const userFolderId = storageConfig.getUserFolderId();
 
     const { folderName, parentFolder } = await req.json();
     
@@ -30,11 +35,18 @@ export async function POST(req: Request) {
       );
     }
 
-    // Construct the folder path
-    const basePath = `${session.user.folderId}/`;
-    const folderPath = parentFolder 
-      ? `${basePath}${parentFolder}/${folderName}/`
-      : `${basePath}${folderName}/`;
+    // Construct the folder path based on storage mode
+    let folderPath: string;
+    if (storageConfig.mode === 'bucket') {
+      folderPath = parentFolder 
+        ? `${parentFolder}/${folderName}/`
+        : `${folderName}/`;
+    } else {
+      const basePath = `${userFolderId}/`;
+      folderPath = parentFolder 
+        ? `${basePath}${parentFolder}/${folderName}/`
+        : `${basePath}${folderName}/`;
+    }
 
     console.log('Creating folder:', folderPath);
 

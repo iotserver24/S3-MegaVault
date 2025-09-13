@@ -1,5 +1,6 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { getStorageConfig } from './storage';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -30,8 +31,9 @@ export const authOptions: NextAuthOptions = {
             throw new Error('Invalid email or password');
           }
 
-          // Generate a folder ID for the user (or use a fixed one for single user)
-          const folderId = 'single-user-folder';
+          // Get storage configuration
+          const storageConfig = getStorageConfig();
+          const folderId = storageConfig.getUserFolderId();
 
           // Return user information for token
           return {

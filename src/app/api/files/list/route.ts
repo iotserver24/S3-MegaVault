@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { S3Client, ListObjectsV2Command, HeadObjectCommand } from '@aws-sdk/client-s3';
 import { Redis } from '@upstash/redis';
 import { authOptions } from '@/lib/auth';
+import { getStorageConfig } from '@/lib/storage';
 
 const s3Client = new S3Client({
   region: process.env.CLOUDFLARE_R2_REGION || 'auto',
@@ -22,34 +23,45 @@ export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.folderId) {
-      console.error('No session or folderId:', session);
+    if (!session?.user?.email) {
+      console.error('No session or email:', session);
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    // Get storage configuration
+    const storageConfig = getStorageConfig();
+    const userFolderId = storageConfig.getUserFolderId();
 
     // Get the current folder from query params
     const { searchParams } = new URL(req.url);
     const currentFolder = searchParams.get('folder') || '';
 
     console.log('Listing files for folder:', {
-      userFolder: session.user.folderId,
-      currentFolder
+      userFolder: userFolderId,
+      currentFolder,
+      storageMode: storageConfig.mode
     });
 
     // List ALL objects in the user's folder to calculate total storage
+    const totalStoragePrefix = storageConfig.mode === 'bucket' ? '' : `${userFolderId}/`;
     const totalStorageCommand = new ListObjectsV2Command({
       Bucket: process.env.CLOUDFLARE_R2_BUCKET,
-      Prefix: `${session.user.folderId}/`,
+      Prefix: totalStoragePrefix,
     });
 
     const totalStorageResponse = await s3Client.send(totalStorageCommand);
     const totalStorageUsed = (totalStorageResponse.Contents || [])
       .reduce((acc, item) => acc + (item.Size || 0), 0);
 
-    // Now get the current folder contents
-    const prefix = currentFolder
-      ? `${session.user.folderId}/${currentFolder}/`
-      : `${session.user.folderId}/`;
+    // Now get the current folder contents based on storage mode
+    let prefix: string;
+    if (storageConfig.mode === 'bucket') {
+      prefix = currentFolder ? `${currentFolder}/` : '';
+    } else {
+      prefix = currentFolder
+        ? `${userFolderId}/${currentFolder}/`
+        : `${userFolderId}/`;
+    }
 
     const command = new ListObjectsV2Command({
       Bucket: process.env.CLOUDFLARE_R2_BUCKET,
@@ -80,8 +92,14 @@ export async function GET(req: Request) {
         let isPublic = false;
         
         try {
-          // First check Redis for public status
-          const fileRedisData = await redis.hgetall(`file:${key}`);
+          // First check Redis for public status with timeout
+          const fileRedisData = await Promise.race([
+            redis.hgetall(`file:${key}`),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Redis timeout')), 2000)
+            )
+          ]) as any;
+          
           if (fileRedisData?.isPublic === '1') {
             isPublic = true;
           } else {
@@ -94,7 +112,19 @@ export async function GET(req: Request) {
             isPublic = headResult.Metadata?.['is-public'] === 'true';
           }
         } catch (error) {
-          console.error(`Error checking file public status for ${key}:`, error);
+          // If Redis fails, just check S3 metadata
+          try {
+            const headCommand = new HeadObjectCommand({
+              Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
+              Key: key,
+            });
+            const headResult = await s3Client.send(headCommand);
+            isPublic = headResult.Metadata?.['is-public'] === 'true';
+          } catch (s3Error) {
+            console.error(`Error checking file public status for ${key}:`, s3Error);
+            // Default to false if both Redis and S3 fail
+            isPublic = false;
+          }
         }
         
         return {

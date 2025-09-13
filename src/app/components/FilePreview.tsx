@@ -15,6 +15,7 @@ interface FilePreviewProps {
   };
   onClose: () => void;
   isPublic?: boolean;
+  onFileMove?: (sourceKey: string, targetKey: string) => void;
 }
 
 // Configure marked with syntax highlighting
@@ -41,10 +42,11 @@ marked.use({
   }
 });
 
-const FilePreview: React.FC<FilePreviewProps> = ({ file, onClose, isPublic = false }) => {
+const FilePreview: React.FC<FilePreviewProps> = ({ file, onClose, isPublic = false, onFileMove }) => {
   const [content, setContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const fileExtension = file.name.split('.').pop()?.toLowerCase() || '';
   
@@ -144,6 +146,33 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file, onClose, isPublic = fal
       document.body.removeChild(a);
     } catch (err) {
       console.error('Download error:', err);
+    }
+  };
+
+  // Drag and drop handlers for file preview
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      // Handle file upload to current folder
+      const selectedFiles = Array.from(files);
+      // You can implement file upload logic here or call a parent function
+      console.log('Files dropped on preview:', selectedFiles);
     }
   };
 
@@ -258,8 +287,36 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file, onClose, isPublic = fal
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-75 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+    <div 
+      className={`fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-75 flex items-center justify-center p-4 z-50 ${
+        isDragOver ? 'bg-blue-500/20 dark:bg-blue-500/30' : ''
+      }`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col transition-all duration-200 ${
+        isDragOver ? 'ring-2 ring-blue-500 dark:ring-blue-400' : ''
+      }`}>
+        {/* Drag and Drop Overlay */}
+        {isDragOver && (
+          <div className="absolute inset-0 bg-blue-500/20 dark:bg-blue-500/30 flex items-center justify-center z-10 rounded-lg">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xl border-2 border-dashed border-blue-500 dark:border-blue-400">
+              <div className="text-center">
+                <svg className="h-12 w-12 text-blue-500 dark:text-blue-400 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <p className="text-lg font-medium text-gray-900 dark:text-white mb-1">
+                  Drop files here to upload
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Files will be uploaded to the current folder
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b dark:border-gray-700">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">{file.name}</h3>

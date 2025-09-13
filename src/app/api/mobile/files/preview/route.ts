@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromJWT } from '@/lib/mobile-auth';
 import { getFileStreamAndMeta } from '@/lib/storage';
+import { getStorageConfig } from '@/lib/storage';
 
 export async function GET(req: NextRequest) {
   // CORS preflight
@@ -37,8 +38,15 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Missing file key' }, { status: 400 });
   }
 
-  // Check if user owns the file (implement your own logic here)
-  if (!key.startsWith(user.folderId)) {
+  // Check if user owns the file based on storage mode
+  const storageConfig = getStorageConfig();
+  const userFolderId = storageConfig.getUserFolderId();
+  
+  const hasAccess = storageConfig.mode === 'bucket' 
+    ? true // In bucket mode, user has access to all files
+    : key.startsWith(userFolderId);
+  
+  if (!hasAccess) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 

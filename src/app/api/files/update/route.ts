@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { authOptions } from '@/lib/auth';
+import { getStorageConfig } from '@/lib/storage';
 
 const s3Client = new S3Client({
   region: process.env.CLOUDFLARE_R2_REGION || 'auto',
@@ -16,9 +17,13 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.folderId) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    // Get storage configuration
+    const storageConfig = getStorageConfig();
+    const userFolderId = storageConfig.getUserFolderId();
 
     const body = await req.json();
     const { key, content } = body;
@@ -30,8 +35,12 @@ export async function POST(req: Request) {
       );
     }
 
-    // Verify the file belongs to the user
-    if (!key.startsWith(session.user.folderId)) {
+    // Verify the file belongs to the user based on storage mode
+    const hasAccess = storageConfig.mode === 'bucket' 
+      ? true // In bucket mode, user has access to all files
+      : key.startsWith(userFolderId);
+    
+    if (!hasAccess) {
       return NextResponse.json(
         { error: 'Unauthorized access to file' },
         { status: 403 }

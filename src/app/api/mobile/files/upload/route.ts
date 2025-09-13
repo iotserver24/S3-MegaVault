@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { authenticateMobile, corsHeaders } from '@/lib/mobile-auth';
+import { getStorageConfig } from '@/lib/storage';
 
 const s3Client = new S3Client({
   region: process.env.CLOUDFLARE_R2_REGION || 'auto',
@@ -29,18 +30,14 @@ export async function POST(req: NextRequest) {
       return errorResponse;
     }
     
-    if (!user?.folderId) {
+    // Get storage configuration
+    const storageConfig = getStorageConfig();
+    const userFolderId = storageConfig.getUserFolderId();
+    
+    if (!user && storageConfig.mode === 'folder') {
       return NextResponse.json(
-        { error: 'Unauthorized - Missing folder ID' }, 
+        { error: 'Unauthorized - Missing user' }, 
         { status: 401, headers: corsHeaders }
-      );
-    }
-
-    // Check for subscription status
-    if (user.subscriptionStatus !== 'active' && user.planType !== 'base') {
-      return NextResponse.json(
-        { error: 'Your subscription is inactive. Please renew your subscription on the website.' }, 
-        { status: 403, headers: corsHeaders }
       );
     }
 
@@ -55,11 +52,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Construct the file path
-    const basePath = `${user.folderId}/`;
-    const filePath = folder 
-      ? `${basePath}${folder}/${file.name}`
-      : `${basePath}${file.name}`;
+    // Construct the file path based on storage mode
+    let filePath: string;
+    if (storageConfig.mode === 'bucket') {
+      filePath = folder ? `${folder}/${file.name}` : file.name;
+    } else {
+      const basePath = `${userFolderId}/`;
+      filePath = folder 
+        ? `${basePath}${folder}/${file.name}`
+        : `${basePath}${file.name}`;
+    }
 
     const buffer = await file.arrayBuffer();
     const command = new PutObjectCommand({

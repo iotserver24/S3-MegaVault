@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { authOptions } from '@/lib/auth';
+import { getStorageConfig } from '@/lib/storage';
 
 const s3Client = new S3Client({
   region: process.env.CLOUDFLARE_R2_REGION || 'auto',
@@ -16,13 +17,17 @@ export async function DELETE(req: Request) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.folderId) {
-      console.error('No session or folderId:', session);
+    if (!session?.user?.email) {
+      console.error('No session or email:', session);
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Get storage configuration
+    const storageConfig = getStorageConfig();
+    const userFolderId = storageConfig.getUserFolderId();
+
     const { key } = await req.json();
-    console.log('Attempting to delete file:', { key, userFolder: session.user.folderId });
+    console.log('Attempting to delete file:', { key, userFolder: userFolderId, storageMode: storageConfig.mode });
 
     if (!key) {
       return NextResponse.json(
@@ -31,9 +36,13 @@ export async function DELETE(req: Request) {
       );
     }
 
-    // Verify the file belongs to the user
-    if (!key.startsWith(`${session.user.folderId}/`)) {
-      console.error('Unauthorized file access:', { key, userFolder: session.user.folderId });
+    // Verify the file belongs to the user based on storage mode
+    const hasAccess = storageConfig.mode === 'bucket' 
+      ? true // In bucket mode, user has access to all files
+      : key.startsWith(`${userFolderId}/`);
+    
+    if (!hasAccess) {
+      console.error('Unauthorized file access:', { key, userFolder: userFolderId, storageMode: storageConfig.mode });
       return NextResponse.json(
         { error: 'Unauthorized access to file' },
         { status: 403 }

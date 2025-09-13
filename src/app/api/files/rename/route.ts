@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 import { S3Client, CopyObjectCommand, DeleteObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { authOptions } from '@/lib/auth';
+import { getStorageConfig } from '@/lib/storage';
 
 const s3Client = new S3Client({
   region: process.env.CLOUDFLARE_R2_REGION || 'auto',
@@ -16,9 +17,13 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.folderId) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    // Get storage configuration
+    const storageConfig = getStorageConfig();
+    const userFolderId = storageConfig.getUserFolderId();
 
     const { oldKey, newKey, type } = await req.json();
 
@@ -26,8 +31,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
     }
 
-    // Make sure the keys are within the user's folder
-    if (!oldKey.startsWith(session.user.folderId) || !newKey.startsWith(session.user.folderId)) {
+    // Make sure the keys are within the user's folder based on storage mode
+    const hasOldAccess = storageConfig.mode === 'bucket' 
+      ? true // In bucket mode, user has access to all files
+      : oldKey.startsWith(userFolderId);
+    
+    const hasNewAccess = storageConfig.mode === 'bucket' 
+      ? true // In bucket mode, user has access to all files
+      : newKey.startsWith(userFolderId);
+    
+    if (!hasOldAccess || !hasNewAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 

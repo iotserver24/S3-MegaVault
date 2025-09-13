@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { authenticateMobile, corsHeaders } from '@/lib/mobile-auth';
+import { getStorageConfig } from '@/lib/storage';
 
 const s3Client = new S3Client({
   region: process.env.CLOUDFLARE_R2_REGION || 'auto',
@@ -62,8 +63,16 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Verify the file belongs to the user
-    if (!key.startsWith(user.folderId)) {
+    // Get storage configuration
+    const storageConfig = getStorageConfig();
+    const userFolderId = storageConfig.getUserFolderId();
+
+    // Verify the file belongs to the user based on storage mode
+    const hasAccess = storageConfig.mode === 'bucket' 
+      ? true // In bucket mode, user has access to all files
+      : key.startsWith(userFolderId);
+    
+    if (!hasAccess) {
       return NextResponse.json(
         { error: 'Unauthorized access to this file' }, 
         { status: 403, headers: corsHeaders }

@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { S3Client, HeadObjectCommand } from '@aws-sdk/client-s3';
 import { Redis } from '@upstash/redis';
 import { authOptions } from '@/lib/auth';
+import { getStorageConfig } from '@/lib/storage';
 
 const s3Client = new S3Client({
   region: process.env.CLOUDFLARE_R2_REGION || 'auto',
@@ -22,9 +23,13 @@ export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.folderId) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    // Get storage configuration
+    const storageConfig = getStorageConfig();
+    const userFolderId = storageConfig.getUserFolderId();
 
     const { searchParams } = new URL(req.url);
     const encodedKey = searchParams.get('key');
@@ -36,8 +41,12 @@ export async function GET(req: Request) {
     // Handle double-encoded key by decoding twice
     const key = decodeURIComponent(decodeURIComponent(encodedKey));
 
-    // Verify the file belongs to the user
-    if (!key.startsWith(session.user.folderId)) {
+    // Verify the file belongs to the user based on storage mode
+    const hasAccess = storageConfig.mode === 'bucket' 
+      ? true // In bucket mode, user has access to all files
+      : key.startsWith(userFolderId);
+    
+    if (!hasAccess) {
       return NextResponse.json({ error: 'Unauthorized access' }, { status: 403 });
     }
 

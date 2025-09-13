@@ -1,4 +1,26 @@
-import { S3Client, ListObjectsV2Command, DeleteObjectCommand, DeleteObjectsCommand } from '@aws-sdk/client-s3';
+import { S3Client, ListObjectsV2Command, DeleteObjectCommand, DeleteObjectsCommand, ListObjectsV2CommandOutput } from '@aws-sdk/client-s3';
+
+/**
+ * Get storage configuration based on environment variables
+ * @returns Storage configuration object
+ */
+export function getStorageConfig() {
+  const storageMode = process.env.STORAGE_ACCESS_MODE || 'folder';
+  const userStorageFolder = process.env.USER_STORAGE_FOLDER || 'single-user-folder';
+  
+  return {
+    mode: storageMode as 'bucket' | 'folder',
+    folderName: userStorageFolder,
+    // Get the storage prefix based on mode
+    getStoragePrefix: () => {
+      return storageMode === 'bucket' ? '' : `${userStorageFolder}/`;
+    },
+    // Get folder ID for user session
+    getUserFolderId: () => {
+      return storageMode === 'bucket' ? '' : userStorageFolder;
+    }
+  };
+}
 
 // Initialize S3 client for Cloudflare R2
 const s3Client = new S3Client({
@@ -42,12 +64,12 @@ export async function deleteUserFiles(email: string): Promise<void> {
     let continuationToken = undefined;
     
     while (isTruncated) {
-      const listCommand = new ListObjectsV2Command({
+      const listCommand: ListObjectsV2Command = new ListObjectsV2Command({
         ...listParams,
         ContinuationToken: continuationToken,
       });
       
-      const listResponse = await s3Client.send(listCommand);
+      const listResponse: ListObjectsV2CommandOutput = await s3Client.send(listCommand);
       const objects = listResponse.Contents || [];
       
       if (objects.length > 0) {
@@ -56,7 +78,7 @@ export async function deleteUserFiles(email: string): Promise<void> {
           const deleteParams = {
             Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
             Delete: {
-              Objects: objects.map(obj => ({ Key: obj.Key })),
+              Objects: objects.map((obj: any) => ({ Key: obj.Key })),
               Quiet: true,
             },
           };

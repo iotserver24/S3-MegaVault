@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
+import { getStorageConfig } from '@/lib/storage';
 
 // Set CORS headers for mobile app
 const corsHeaders = {
@@ -48,8 +49,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Generate a folder ID for the user (or use a fixed one for single user)
-    const folderId = 'single-user-folder';
+    // Get storage configuration
+    const storageConfig = getStorageConfig();
+    const folderId = storageConfig.getUserFolderId();
     
     // Create JWT token
     const token = jwt.sign(

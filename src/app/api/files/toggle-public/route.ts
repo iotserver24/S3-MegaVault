@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { Redis } from '@upstash/redis';
 import { S3Client, CopyObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
 import { authOptions } from '@/lib/auth';
+import { getStorageConfig } from '@/lib/storage';
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
@@ -22,9 +23,13 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.folderId) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    // Get storage configuration
+    const storageConfig = getStorageConfig();
+    const userFolderId = storageConfig.getUserFolderId();
 
     const { key, isPublic } = await req.json();
 
@@ -32,8 +37,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'File key is required' }, { status: 400 });
     }
 
-    // Verify the file belongs to the user
-    if (!key.startsWith(session.user.folderId)) {
+    // Verify the file belongs to the user based on storage mode
+    const hasAccess = storageConfig.mode === 'bucket' 
+      ? true // In bucket mode, user has access to all files
+      : key.startsWith(userFolderId);
+    
+    if (!hasAccess) {
       return NextResponse.json({ error: 'Unauthorized access' }, { status: 403 });
     }
 

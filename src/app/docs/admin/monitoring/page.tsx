@@ -1,5 +1,4 @@
 import { Alert, TableOfContents, Card, CodeBlock } from '../../components/DocComponents';
-import { Alert, TableOfContents, Card, CodeBlock } from '../../components/DocComponents';
 import Link from 'next/link';
 
 const tableOfContents = [
@@ -112,19 +111,17 @@ export async function GET() {
 ENDPOINT="https://your-domain.com/api/health"
 SLACK_WEBHOOK="https://hooks.slack.com/your-webhook"
 
-response=$(curl -s -w "%{http_code}" -o /tmp/health.json "$ENDPOINT")
-http_code=${response: -3}
-
-if [ "$http_code" = "200" ]; then
+# Perform health check
+if curl -f -s "$ENDPOINT" > /dev/null; then
     echo "✓ Health check passed"
     exit 0
 else
-    echo "✗ Health check failed (HTTP $http_code)"
+    echo "✗ Health check failed"
     
     # Send alert to Slack
-    curl -X POST "$SLACK_WEBHOOK" \
-        -H 'Content-type: application/json' \
-        --data "{\"text\":\"🚨 MegaVault health check failed (HTTP $http_code)\"}"
+    curl -X POST "$SLACK_WEBHOOK" \\
+        -H 'Content-type: application/json' \\
+        --data '{"text":"🚨 MegaVault health check failed"}'
     
     exit 1
 fi`}

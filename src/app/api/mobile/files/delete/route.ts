@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { S3Client, DeleteObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { Redis } from '@upstash/redis';
 import { authenticateMobile, corsHeaders } from '@/lib/mobile-auth';
+import { getStorageConfig } from '@/lib/storage';
 
 const s3Client = new S3Client({
   region: process.env.CLOUDFLARE_R2_REGION || 'auto',
@@ -37,6 +38,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Get storage configuration
+    const storageConfig = getStorageConfig();
+    const userFolderId = storageConfig.getUserFolderId();
+
     // Parse request body
     const { key, isFolder } = await req.json();
 
@@ -47,8 +52,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verify the file/folder belongs to the user
-    if (!key.startsWith(user.folderId)) {
+    // Verify the file/folder belongs to the user based on storage mode
+    const hasAccess = storageConfig.mode === 'bucket' 
+      ? true // In bucket mode, user has access to all files
+      : key.startsWith(userFolderId);
+    
+    if (!hasAccess) {
       return NextResponse.json(
         { error: 'Unauthorized access to this file/folder' }, 
         { status: 403, headers: corsHeaders }
@@ -100,7 +109,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('Mobile delete error:', error);
     return NextResponse.json(
-      { error: `Failed to delete ${isFolder ? 'folder' : 'file'}` },
+      { error: 'Failed to delete file/folder' },
       { status: 500, headers: corsHeaders }
     );
   }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { S3Client, ListObjectsV2Command, HeadObjectCommand } from '@aws-sdk/client-s3';
 import { Redis } from '@upstash/redis';
 import { authenticateMobile, corsHeaders } from '@/lib/mobile-auth';
+import { getStorageConfig } from '@/lib/storage';
 
 const s3Client = new S3Client({
   region: process.env.CLOUDFLARE_R2_REGION || 'auto',
@@ -37,6 +38,10 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // Get storage configuration
+    const storageConfig = getStorageConfig();
+    const userFolderId = storageConfig.getUserFolderId();
+
     // Get the current folder from query params
     const { searchParams } = new URL(req.url);
     const currentFolder = searchParams.get('folder') || '';
@@ -46,19 +51,25 @@ export async function GET(req: NextRequest) {
     console.log('Mobile files list - Current folder:', currentFolder);
 
     // List ALL objects in the user's folder to calculate total storage
+    const totalStoragePrefix = storageConfig.mode === 'bucket' ? '' : `${userFolderId}/`;
     const totalStorageCommand = new ListObjectsV2Command({
       Bucket: process.env.CLOUDFLARE_R2_BUCKET,
-      Prefix: `${user.folderId}/`,
+      Prefix: totalStoragePrefix,
     });
 
     const totalStorageResponse = await s3Client.send(totalStorageCommand);
     const totalStorageUsed = (totalStorageResponse.Contents || [])
       .reduce((acc, item) => acc + (item.Size || 0), 0);
 
-    // Now get the current folder contents
-    const prefix = currentFolder
-      ? `${user.folderId}/${currentFolder}/`
-      : `${user.folderId}/`;
+    // Now get the current folder contents based on storage mode
+    let prefix: string;
+    if (storageConfig.mode === 'bucket') {
+      prefix = currentFolder ? `${currentFolder}/` : '';
+    } else {
+      prefix = currentFolder
+        ? `${userFolderId}/${currentFolder}/`
+        : `${userFolderId}/`;
+    }
       
     console.log('Mobile files list - S3 prefix:', prefix);
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
+import { getStorageConfig } from './storage';
 
 // CORS headers for mobile app
 export const corsHeaders = {
@@ -54,12 +55,16 @@ export async function authenticateMobile(req: NextRequest): Promise<{
       };
     }
     
+    // Get storage configuration
+    const storageConfig = getStorageConfig();
+    const userFolderId = storageConfig.getUserFolderId();
+    
     // Return the authenticated user for single-user system
     return { 
       user: {
         id: decoded.email,
         email: decoded.email,
-        folderId: 'single-user-folder',
+        folderId: userFolderId,
         isActive: true,
       }, 
       errorResponse: null 

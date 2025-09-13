@@ -135,7 +135,7 @@ export default function SystemAdministrationPage() {
             <thead className="bg-slate-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Component</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Small (< 100 users)</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Small (&lt; 100 users)</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Medium (100-1000 users)</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Large (1000+ users)</th>
               </tr>
