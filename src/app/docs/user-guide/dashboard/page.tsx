@@ -198,7 +198,7 @@ export default function DashboardPage() {
         <Alert type="warning" title="File Size Limits">
           Maximum file size depends on your configuration. Default limits:
           <ul className="mt-2">
-            <li>Individual file: 100 MB</li>
+            <li>Individual file: No size limit</li>
             <li>Batch upload: 500 MB total</li>
             <li>These limits can be adjusted by administrators</li>
           </ul>

@@ -341,7 +341,7 @@ STORAGE_MAX_FILE_SIZE=104857600           # 100MB in bytes
 STORAGE_ALLOWED_TYPES=image/*,application/pdf,text/*,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,video/mp4,audio/mpeg
 
 # Upload Configuration
-STORAGE_MULTIPART_THRESHOLD=10485760     # 10MB - use multipart for larger files
+STORAGE_MULTIPART_THRESHOLD=104857600    # 100MB - use multipart for larger files
 STORAGE_MULTIPART_CHUNK_SIZE=5242880     # 5MB chunk size
 STORAGE_MAX_CONCURRENT_UPLOADS=3         # Maximum concurrent upload chunks
 

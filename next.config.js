@@ -18,6 +18,13 @@ const nextConfig = {
     return config;
   },
   
+  // Configure API routes to handle larger file uploads
+  api: {
+    bodyParser: {
+      sizeLimit: '1gb', // Allow up to 1GB file uploads
+    },
+  },
+  
   typescript: {
     // !! WARN !!
     // Dangerously allow production builds to successfully complete even if

@@ -134,7 +134,7 @@ export default function FileManagementPage() {
             <div>
               <h4 className="font-semibold text-slate-900 mb-3">Default Limits</h4>
               <ul className="text-sm space-y-1">
-                <li><strong>Single File:</strong> 100 MB maximum</li>
+                <li><strong>Single File:</strong> No size limit</li>
                 <li><strong>Batch Upload:</strong> 500 MB total</li>
                 <li><strong>Folder Upload:</strong> 1,000 files maximum</li>
                 <li><strong>File Name:</strong> 255 characters maximum</li>

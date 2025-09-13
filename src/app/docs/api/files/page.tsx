@@ -221,9 +221,9 @@ isPublic: false`}
 
         <h3>File Size Limits</h3>
         <ul>
-          <li><strong>Free Plan:</strong> 10 MB per file</li>
-          <li><strong>Pro Plan:</strong> 100 MB per file</li>
-          <li><strong>Enterprise:</strong> 1 GB per file</li>
+          <li><strong>Free Plan:</strong> No size limit</li>
+          <li><strong>Pro Plan:</strong> No size limit</li>
+          <li><strong>Enterprise:</strong> No size limit</li>
         </ul>
       </section>
 

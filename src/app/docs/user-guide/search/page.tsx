@@ -97,7 +97,7 @@ type:pdf
 folder:"Projects/Alpha"
 
 # Filter by size
-size:>10MB
+size:>100MB
 
 # Filter by date
 modified:today`}
@@ -208,7 +208,7 @@ is:shared
 tag:important OR tag:urgent
 
 # Old files for cleanup
-modified:<6months size:>10MB`}
+modified:<6months size:>100MB`}
         </CodeBlock>
 
         <h3>Search Efficiency Tips</h3>
