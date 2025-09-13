@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
       });
 
       // Generate a presigned URL that's valid for 15 minutes
-      const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 900 });
+      const signedUrl = await getSignedUrl(s3Client as any, command as any, { expiresIn: 900 });
       
       return NextResponse.json({ 
         downloadUrl: signedUrl 
@@ -86,7 +86,7 @@ export async function GET(req: NextRequest) {
     });
 
     // Generate a presigned URL that's valid for 15 minutes
-    const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 900 });
+    const signedUrl = await getSignedUrl(s3Client as any, command as any, { expiresIn: 900 });
 
     return NextResponse.json({ 
       downloadUrl: signedUrl 

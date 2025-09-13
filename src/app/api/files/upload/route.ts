@@ -3,12 +3,9 @@ import { NextResponse } from 'next/server';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { authOptions } from '@/lib/auth';
 
-// Disable body parsing for file uploads
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// Configure route for large file uploads
+export const runtime = 'nodejs';
+export const maxDuration = 300; // 5 minutes for large file uploads
 
 const s3Client = new S3Client({
   region: process.env.S3_REGION || 'auto',

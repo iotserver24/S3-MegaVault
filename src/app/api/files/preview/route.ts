@@ -1,5 +1,5 @@
 import { getServerSession } from 'next-auth';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { S3Client, GetObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
 import { authOptions } from '@/lib/auth';
 import { getToken } from 'next-auth/jwt';
@@ -13,7 +13,7 @@ const s3Client = new S3Client({
   },
 });
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const encodedKey = searchParams.get('key');
