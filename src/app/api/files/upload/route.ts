@@ -87,7 +87,30 @@ export async function POST(req: Request) {
       type: file.type
     });
 
-    const buffer = await file.arrayBuffer();
+    // For large files, use streaming instead of loading entire file into memory
+    const fileSize = file.size;
+    console.log(`Processing file: ${file.name}, size: ${fileSize} bytes`);
+    
+    // Use streaming for files larger than 50MB to avoid memory issues
+    let fileBuffer: Buffer;
+    if (fileSize > 50 * 1024 * 1024) {
+      console.log('Large file detected, using streaming upload');
+      const chunks: Uint8Array[] = [];
+      const reader = file.stream().getReader();
+      
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          chunks.push(value);
+        }
+        fileBuffer = Buffer.concat(chunks);
+      } finally {
+        reader.releaseLock();
+      }
+    } else {
+      fileBuffer = Buffer.from(await file.arrayBuffer());
+    }
     
     // Sanitize filename for S3 metadata headers (remove invalid characters)
     const sanitizeForMetadata = (str: string): string => {
@@ -114,7 +137,7 @@ export async function POST(req: Request) {
     const command = new PutObjectCommand({
       Bucket: process.env.S3_BUCKET!,
       Key: filePath,
-      Body: Buffer.from(buffer),
+      Body: fileBuffer,
       ContentType: file.type,
       Metadata: metadata,
       // Set cache control for video files
