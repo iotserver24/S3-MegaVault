@@ -76,9 +76,18 @@ export async function POST(req: NextRequest) {
 
     const buffer = await file.arrayBuffer();
     
+    // Sanitize filename for S3 metadata headers (remove invalid characters)
+    const sanitizeForMetadata = (str: string): string => {
+      return str
+        .replace(/[^\x20-\x7E]/g, '_') // Replace non-ASCII characters with underscore
+        .replace(/[^\w\s\-_.]/g, '_') // Replace special chars with underscore
+        .replace(/\s+/g, '_') // Replace spaces with underscore
+        .substring(0, 50); // Limit length for header safety
+    };
+    
     // Prepare metadata for video files
     const metadata: Record<string, string> = {
-      'original-name': file.name,
+      'original-name': sanitizeForMetadata(file.name),
       'uploaded-at': new Date().toISOString(),
       'file-size': file.size.toString(),
     };
@@ -101,9 +110,9 @@ export async function POST(req: NextRequest) {
 
     await s3Client.send(command);
 
-    // Store file metadata in Redis
+    // Store file metadata in Redis (including original filename)
     await redis.hset(`file:${filePath}`, {
-      name: file.name,
+      name: file.name, // Store original filename in Redis
       size: file.size.toString(),
       type: file.type,
       uploadedAt: new Date().toISOString(),
