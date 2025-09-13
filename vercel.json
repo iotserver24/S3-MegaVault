@@ -1,4 +1,4 @@
-{
+
   "functions": {
     "src/app/api/files/upload/route.ts": {
       "maxDuration": 300,
@@ -9,7 +9,6 @@
       "memory": 1024
     }
   },
-  "regions": ["iad1"],
   "headers": [
     {
       "source": "/api/files/upload",

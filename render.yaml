@@ -24,24 +24,12 @@ services:
     
     # Increase timeout for file uploads
     timeout: 300
-    
-    # Request size limits for large file uploads
-    requestSizeLimit: 100MB
-    
-    # Additional configuration for large file handling
-    region: oregon
     envVars:
       # Node.js Configuration
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 3001
-      
-      # Node.js memory and request limits for large files
-      - key: NODE_OPTIONS
-        value: "--max-old-space-size=2048"
-      - key: BODY_SIZE_LIMIT
-        value: "100mb"
       
       # Application Configuration (REQUIRED - Set these in Render dashboard)
       - key: NEXTAUTH_URL

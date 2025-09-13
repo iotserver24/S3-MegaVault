@@ -9,6 +9,15 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const maxDuration = 300; // 5 minutes timeout for large file uploads
 
+// Configure body size limit for large file uploads (50MB)
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '50mb',
+    },
+  },
+};
+
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
@@ -74,30 +83,7 @@ export async function POST(req: NextRequest) {
         : `${basePath}${file.name}`;
     }
 
-    // For large files, use streaming instead of loading entire file into memory
-    const fileSize = file.size;
-    console.log(`Processing mobile file: ${file.name}, size: ${fileSize} bytes`);
-    
-    // Use streaming for files larger than 50MB to avoid memory issues
-    let fileBuffer: Buffer;
-    if (fileSize > 50 * 1024 * 1024) {
-      console.log('Large file detected, using streaming upload');
-      const chunks: Uint8Array[] = [];
-      const reader = file.stream().getReader();
-      
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          chunks.push(value);
-        }
-        fileBuffer = Buffer.concat(chunks);
-      } finally {
-        reader.releaseLock();
-      }
-    } else {
-      fileBuffer = Buffer.from(await file.arrayBuffer());
-    }
+    const buffer = await file.arrayBuffer();
     
     // Sanitize filename for S3 metadata headers (remove invalid characters)
     const sanitizeForMetadata = (str: string): string => {
@@ -124,7 +110,7 @@ export async function POST(req: NextRequest) {
     const command = new PutObjectCommand({
       Bucket: process.env.S3_BUCKET!,
       Key: filePath,
-      Body: fileBuffer,
+      Body: Buffer.from(buffer),
       ContentType: file.type,
       Metadata: metadata,
       // Set cache control for video files

@@ -3,7 +3,11 @@ const nextConfig = {
   // Enable standalone output for Docker
   output: 'standalone',
   
-  // Note: Body size limits are handled at the route level in App Router
+  // Configure body size limits for file uploads
+  serverRuntimeConfig: {
+    // Increase body size limit to 50MB for file uploads
+    maxFileSize: 50 * 1024 * 1024, // 50MB
+  },
   
   // Configure experimental features for better file handling
   experimental: {
