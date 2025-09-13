@@ -1,0 +1,83 @@
+import { getServerSession } from 'next-auth';
+import { NextResponse } from 'next/server';
+import { Redis } from '@upstash/redis';
+import { S3Client, CopyObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
+import { authOptions } from '@/lib/auth';
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
+
+const s3Client = new S3Client({
+  region: process.env.CLOUDFLARE_R2_REGION || 'auto',
+  endpoint: process.env.CLOUDFLARE_R2_ENDPOINT,
+  credentials: {
+    accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY!,
+  },
+});
+
+export async function POST(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.folderId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { key, isPublic } = await req.json();
+
+    if (!key) {
+      return NextResponse.json({ error: 'File key is required' }, { status: 400 });
+    }
+
+    // Verify the file belongs to the user
+    if (!key.startsWith(session.user.folderId)) {
+      return NextResponse.json({ error: 'Unauthorized access' }, { status: 403 });
+    }
+
+    // First get the existing object metadata
+    const headCommand = new HeadObjectCommand({
+      Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
+      Key: key,
+    });
+
+    const headResult = await s3Client.send(headCommand);
+
+    // Prepare the metadata for the copy operation
+    const metadata = {
+      ...headResult.Metadata,
+      'is-public': isPublic ? 'true' : 'false'
+    };
+
+    // Copy the object onto itself with new metadata
+    const copyCommand = new CopyObjectCommand({
+      Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
+      CopySource: `${process.env.CLOUDFLARE_R2_BUCKET}/${key}`,
+      Key: key,
+      Metadata: metadata,
+      MetadataDirective: 'REPLACE',
+      ContentType: headResult.ContentType,
+    });
+
+    await s3Client.send(copyCommand);
+
+    // Update Redis metadata
+    await redis.hset(`file:${key}`, {
+      isPublic: isPublic ? '1' : '0',
+      updatedAt: new Date().toISOString()
+    });
+
+    return NextResponse.json({
+      message: `File is now ${isPublic ? 'public' : 'private'}`,
+      isPublic
+    });
+  } catch (error) {
+    console.error('Toggle public access error:', error);
+    return NextResponse.json(
+      { error: 'Failed to update file access' },
+      { status: 500 }
+    );
+  }
+} 

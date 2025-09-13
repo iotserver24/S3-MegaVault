@@ -1,0 +1,99 @@
+import { S3Client, ListObjectsV2Command, DeleteObjectCommand, DeleteObjectsCommand } from '@aws-sdk/client-s3';
+
+// Initialize S3 client for Cloudflare R2
+const s3Client = new S3Client({
+  region: process.env.CLOUDFLARE_R2_REGION || 'auto',
+  endpoint: process.env.CLOUDFLARE_R2_ENDPOINT,
+  credentials: {
+    accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY!,
+  },
+});
+
+/**
+ * Delete all files belonging to a user
+ * @param email User's email address (used to find their folder ID)
+ * @returns Promise that resolves when all files are deleted
+ */
+export async function deleteUserFiles(email: string): Promise<void> {
+  try {
+    // Get user's folder ID from Redis
+    const redis = await import('@upstash/redis');
+    const redisClient = new redis.Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL!,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+    });
+    
+    const userData = await redisClient.hgetall(`user:${email}`);
+    if (!userData || !userData.folderId) {
+      throw new Error(`User folder ID not found for ${email}`);
+    }
+    
+    const folderId = userData.folderId;
+    console.log(`Deleting all files for user ${email} with folder ID ${folderId}`);
+    
+    // List all objects in the user's folder
+    const listParams = {
+      Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
+      Prefix: `${folderId}/`,
+    };
+    
+    let isTruncated = true;
+    let continuationToken = undefined;
+    
+    while (isTruncated) {
+      const listCommand = new ListObjectsV2Command({
+        ...listParams,
+        ContinuationToken: continuationToken,
+      });
+      
+      const listResponse = await s3Client.send(listCommand);
+      const objects = listResponse.Contents || [];
+      
+      if (objects.length > 0) {
+        // If there are many objects, we can use the batch delete
+        if (objects.length > 1) {
+          const deleteParams = {
+            Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
+            Delete: {
+              Objects: objects.map(obj => ({ Key: obj.Key })),
+              Quiet: true,
+            },
+          };
+          
+          await s3Client.send(new DeleteObjectsCommand(deleteParams));
+        } else {
+          // For a single object, use regular delete
+          const deleteParams = {
+            Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
+            Key: objects[0].Key,
+          };
+          
+          await s3Client.send(new DeleteObjectCommand(deleteParams));
+        }
+      }
+      
+      // Check if there are more objects to delete
+      isTruncated = !!listResponse.IsTruncated;
+      continuationToken = listResponse.NextContinuationToken;
+    }
+    
+    // Update user storage stats in Redis
+    await redisClient.hset(`user:${email}`, {
+      usedStorage: '0',
+      updatedAt: new Date().toISOString(),
+    });
+    
+    // Update folder stats in Redis
+    await redisClient.hset(`folder:${folderId}:stats`, {
+      totalSize: '0',
+      totalFiles: '0',
+      lastUpdated: new Date().toISOString(),
+    });
+    
+    console.log(`Successfully deleted all files for user ${email}`);
+  } catch (error) {
+    console.error(`Error deleting files for user ${email}:`, error);
+    throw error;
+  }
+} 

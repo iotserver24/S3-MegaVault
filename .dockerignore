@@ -1,0 +1,15 @@
+# Add to .dockerignore to optimize build
+node_modules
+npm-debug.log
+.next
+.git
+.gitignore
+README.md
+Dockerfile
+docker-compose.yml
+.env*
+logs
+.vercel
+*.log
+.DS_Store
+Thumbs.db
