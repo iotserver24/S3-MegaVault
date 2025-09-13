@@ -9,15 +9,6 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const maxDuration = 300; // 5 minutes timeout for large file uploads
 
-// Configure body size limit for large file uploads (50MB)
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '50mb',
-    },
-  },
-};
-
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }

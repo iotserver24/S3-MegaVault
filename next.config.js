@@ -3,16 +3,19 @@ const nextConfig = {
   // Enable standalone output for Docker
   output: 'standalone',
   
-  // Configure body size limits for file uploads
-  serverRuntimeConfig: {
-    // Increase body size limit to 50MB for file uploads
-    maxFileSize: 50 * 1024 * 1024, // 50MB
-  },
-  
   // Configure experimental features for better file handling
   experimental: {
     // Enable server components for better performance
     serverComponentsExternalPackages: ['@aws-sdk/client-s3', '@upstash/redis'],
+  },
+  
+  // Configure webpack to handle larger files
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      // Increase body size limit for server-side processing
+      config.externals = [...(config.externals || []), 'formidable'];
+    }
+    return config;
   },
   
   typescript: {
