@@ -45,8 +45,6 @@ ENV NODE_ENV=production
 ENV PORT=3001
 ENV HOSTNAME=0.0.0.0
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \\n  CMD node -e \"http.get('http://localhost:3001/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })\"
 
 # Start the application
-CMD [\"dumb-init\", \"node\", \"server.js\"]
+CMD ["dumb-init", "node", "server.js"]
