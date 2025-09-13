@@ -1,24 +1,9 @@
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
+import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { Redis } from '@upstash/redis';
+import { getRedis, getS3Client } from '@/lib/redis';
 import { authOptions } from '@/lib/auth';
-
-// Create an S3 client with explicit type
-const s3Client = new S3Client({
-  region: process.env.CLOUDFLARE_R2_REGION || 'auto',
-  endpoint: process.env.CLOUDFLARE_R2_ENDPOINT,
-  credentials: {
-    accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY!,
-  },
-});
-
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
 
 export async function GET(
   req: Request,
@@ -27,6 +12,9 @@ export async function GET(
   try {
     const session = await getServerSession(authOptions);
     const key = decodeURIComponent(params.key);
+
+    const redis = getRedis();
+    const s3Client = getS3Client();
 
     // Get file metadata from Redis
     const fileMetadata = await redis.hgetall(`file:${key}`);
@@ -41,7 +29,7 @@ export async function GET(
 
     // Create a GetObject command
     const command = new GetObjectCommand({
-      Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
+      Bucket: process.env.S3_BUCKET!,
       Key: key,
       // You can add response headers to control how the file is downloaded
       ResponseContentDisposition: `attachment; filename="${key.split('/').pop()}"`,

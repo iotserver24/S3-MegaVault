@@ -1,20 +1,6 @@
 import { NextResponse } from 'next/server';
-import { S3Client, HeadObjectCommand } from '@aws-sdk/client-s3';
-import { Redis } from '@upstash/redis';
-
-const s3Client = new S3Client({
-  region: process.env.S3_REGION || 'auto',
-  endpoint: process.env.S3_ENDPOINT,
-  credentials: {
-    accessKeyId: process.env.S3_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
-  },
-});
-
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
+import { HeadObjectCommand } from '@aws-sdk/client-s3';
+import { getRedis, getS3Client } from '@/lib/redis';
 
 export async function GET(req: Request) {
   try {
@@ -37,10 +23,12 @@ export async function GET(req: Request) {
     }
 
     // First check Redis for public status
+    const redis = getRedis();
     const fileMetadata = await redis.hgetall(`file:${key}`);
     const isPublicInRedis = fileMetadata?.isPublic === '1';
 
     // Get file metadata from R2
+    const s3Client = getS3Client();
     const command = new HeadObjectCommand({
       Bucket: process.env.S3_BUCKET!,
       Key: key,

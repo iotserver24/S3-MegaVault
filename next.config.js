@@ -3,6 +3,14 @@ const nextConfig = {
   // Enable standalone output for Docker
   output: 'standalone',
   
+  // Note: Body size limits are handled at the route level in App Router
+  
+  // Configure experimental features for better file handling
+  experimental: {
+    // Enable server components for better performance
+    serverComponentsExternalPackages: ['@aws-sdk/client-s3', '@upstash/redis'],
+  },
+  
   typescript: {
     // !! WARN !!
     // Dangerously allow production builds to successfully complete even if

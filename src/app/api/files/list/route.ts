@@ -1,23 +1,9 @@
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
-import { S3Client, ListObjectsV2Command, HeadObjectCommand } from '@aws-sdk/client-s3';
-import { Redis } from '@upstash/redis';
+import { ListObjectsV2Command, HeadObjectCommand } from '@aws-sdk/client-s3';
+import { getRedis, getS3Client } from '@/lib/redis';
 import { authOptions } from '@/lib/auth';
 import { getStorageConfig } from '@/lib/storage';
-
-const s3Client = new S3Client({
-  region: process.env.S3_REGION || 'auto',
-  endpoint: process.env.S3_ENDPOINT,
-  credentials: {
-    accessKeyId: process.env.S3_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
-  },
-});
-
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
 
 export async function GET(req: Request) {
   try {
@@ -27,6 +13,9 @@ export async function GET(req: Request) {
       console.error('No session or email:', session);
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const redis = getRedis();
+    const s3Client = getS3Client();
 
     // Get storage configuration
     const storageConfig = getStorageConfig();

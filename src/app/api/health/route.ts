@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { Redis } from '@upstash/redis';
+import { getRedis } from '@/lib/redis';
 
 // Simple health check endpoint for Docker and monitoring
 export async function GET() {
@@ -25,10 +25,7 @@ export async function GET() {
 
     // Test Redis connection
     try {
-      const redis = new Redis({
-        url: process.env.UPSTASH_REDIS_REST_URL!,
-        token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-      });
+      const redis = getRedis();
       
       // Simple Redis ping
       const pingResult = await redis.ping();

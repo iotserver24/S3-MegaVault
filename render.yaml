@@ -15,6 +15,15 @@ services:
     buildCommand: npm ci && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
+    
+    # Configure for large file uploads
+    disk:
+      name: megavault-disk
+      mountPath: /tmp
+      sizeGB: 10
+    
+    # Increase timeout for file uploads
+    timeout: 300
     envVars:
       # Node.js Configuration
       - key: NODE_ENV
@@ -68,6 +77,10 @@ services:
         value: true
       - key: ENABLE_3D_VISUALIZATION
         value: false
+      
+      # File Upload Configuration - No size limits
+      # - key: MAX_FILE_SIZE_MB
+      #   value: 100
       
       # Application Branding
       - key: APP_NAME

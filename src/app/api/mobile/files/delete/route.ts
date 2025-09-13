@@ -1,22 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { S3Client, DeleteObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
-import { Redis } from '@upstash/redis';
+import { DeleteObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
+import { getRedis, getS3Client } from '@/lib/redis';
 import { authenticateMobile, corsHeaders } from '@/lib/mobile-auth';
 import { getStorageConfig } from '@/lib/storage';
-
-const s3Client = new S3Client({
-  region: process.env.S3_REGION || 'auto',
-  endpoint: process.env.S3_ENDPOINT,
-  credentials: {
-    accessKeyId: process.env.S3_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
-  },
-});
-
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
 
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
@@ -37,6 +23,9 @@ export async function POST(req: NextRequest) {
         { status: 401, headers: corsHeaders }
       );
     }
+
+    const redis = getRedis();
+    const s3Client = getS3Client();
 
     // Get storage configuration
     const storageConfig = getStorageConfig();
