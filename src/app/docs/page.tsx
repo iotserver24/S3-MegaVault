@@ -136,6 +136,55 @@ export default function DocsHomePage() {
               Complete guide to setting up, using, and developing with MegaVault - 
               the open-source cloud storage platform built for developers and teams.
             </p>
+            
+            {/* GitHub Badges */}
+            <div className="flex flex-wrap justify-center gap-3 mb-8">
+              <a 
+                href="https://github.com/iotserver24/S3-MegaVault/issues"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-transform hover:scale-105"
+              >
+                <img 
+                  src="https://img.shields.io/github/issues/iotserver24/S3-MegaVault?style=for-the-badge&logo=github"
+                  alt="GitHub Issues"
+                />
+              </a>
+              <a 
+                href="https://github.com/iotserver24/S3-MegaVault/stargazers"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-transform hover:scale-105"
+              >
+                <img 
+                  src="https://img.shields.io/github/stars/iotserver24/S3-MegaVault?style=for-the-badge&logo=github"
+                  alt="GitHub Stars"
+                />
+              </a>
+              <a 
+                href="https://github.com/iotserver24/S3-MegaVault/network"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-transform hover:scale-105"
+              >
+                <img 
+                  src="https://img.shields.io/github/forks/iotserver24/S3-MegaVault?style=for-the-badge&logo=github"
+                  alt="GitHub Forks"
+                />
+              </a>
+              <a 
+                href="https://github.com/iotserver24/S3-MegaVault/blob/main/LICENSE"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-transform hover:scale-105"
+              >
+                <img 
+                  src="https://img.shields.io/github/license/iotserver24/S3-MegaVault?style=for-the-badge&logo=github"
+                  alt="MIT License"
+                />
+              </a>
+            </div>
+            
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/docs/getting-started"

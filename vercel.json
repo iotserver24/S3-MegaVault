@@ -1,0 +1,69 @@
+{
+  "version": 2,
+  "name": "megavault",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "functions": {
+    "src/app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "NODE_ENV": "production",
+    "NEXTAUTH_URL": "@nextauth_url",
+    "USER_EMAIL": "@user_email",
+    "USER_PASSWORD": "@user_password",
+    "NEXTAUTH_SECRET": "@nextauth_secret",
+    "UPSTASH_REDIS_REST_URL": "@upstash_redis_rest_url",
+    "UPSTASH_REDIS_REST_TOKEN": "@upstash_redis_rest_token",
+    "S3_ENDPOINT": "@s3_endpoint",
+    "S3_ACCESS_KEY_ID": "@s3_access_key_id",
+    "S3_SECRET_ACCESS_KEY": "@s3_secret_access_key",
+    "S3_BUCKET": "@s3_bucket",
+    "S3_REGION": "auto",
+    "STORAGE_ACCESS_MODE": "folder",
+    "USER_STORAGE_FOLDER": "single-user-folder",
+    "ENABLE_PUBLIC_REGISTRATION": "false",
+    "ENABLE_FILE_SHARING": "true",
+    "ENABLE_3D_VISUALIZATION": "false",
+    "APP_NAME": "MegaVault",
+    "APP_DESCRIPTION": "Open Source Cloud Storage"
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        },
+        {
+          "key": "Access-Control-Max-Age",
+          "value": "86400"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/pu/(.*)",
+      "destination": "/pr/$1",
+      "permanent": false
+    }
+  ],
+  "regions": ["iad1"],
+  "framework": "nextjs",
+  "outputDirectory": ".next"
+}

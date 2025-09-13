@@ -1,0 +1,96 @@
+# MegaVault - Render Deployment Configuration
+# This file configures automatic deployment on Render.com
+# 
+# To deploy:
+# 1. Connect your GitHub repository to Render
+# 2. Render will automatically detect this file and configure the services
+# 3. Set your environment variables in the Render dashboard
+
+services:
+  # Main Web Service
+  - type: web
+    name: megavault-web
+    env: node
+    plan: starter
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      # Node.js Configuration
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      
+      # Application Configuration (REQUIRED - Set these in Render dashboard)
+      - key: NEXTAUTH_URL
+        fromService:
+          type: web
+          name: megavault-web
+          property: host
+      
+      # Authentication (REQUIRED - Set these in Render dashboard)
+      - key: USER_EMAIL
+        sync: false  # Set manually in dashboard
+      - key: USER_PASSWORD
+        sync: false  # Set manually in dashboard
+      - key: NEXTAUTH_SECRET
+        sync: false  # Set manually in dashboard
+      
+      # Database Configuration (REQUIRED - Set these in Render dashboard)
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false  # Set manually in dashboard
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false  # Set manually in dashboard
+      
+      # Storage Configuration (REQUIRED - Set these in Render dashboard)
+      - key: S3_ENDPOINT
+        sync: false  # Set manually in dashboard
+      - key: S3_ACCESS_KEY_ID
+        sync: false  # Set manually in dashboard
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false  # Set manually in dashboard
+      - key: S3_BUCKET
+        sync: false  # Set manually in dashboard
+      - key: S3_REGION
+        sync: false
+      
+      # Storage Access Mode
+      - key: STORAGE_ACCESS_MODE
+        value: folder
+      - key: USER_STORAGE_FOLDER
+        value: S3-MEGAVAULT
+      
+      # Application Features
+      - key: ENABLE_PUBLIC_REGISTRATION
+        value: false
+      - key: ENABLE_FILE_SHARING
+        value: true
+      - key: ENABLE_3D_VISUALIZATION
+        value: false
+      
+      # Application Branding
+      - key: APP_NAME
+        value: MegaVault
+      - key: APP_DESCRIPTION
+        value: Open Source Cloud Storage
+    
+    # Auto-deploy from main branch
+    autoDeploy: true
+    
+    # Branch configuration
+    branch: main
+    
+    # Scaling configuration
+    scaling:
+      minInstances: 1
+      maxInstances: 3
+      targetMemoryPercent: 80
+      targetCPUPercent: 80
+
+# Optional: Redis Database Service (if you prefer managed Redis over Upstash)
+# Uncomment and configure if you want to use Render's managed Redis
+# databases:
+#   - name: megavault-redis
+#     plan: starter
+#     region: oregon

@@ -1,12 +1,15 @@
 # MegaVault Open Source
 
-![MegaVault Logo](https://via.placeholder.com/200x60?text=MegaVault)
+<div align="center">
+  <img src="https://raw.githubusercontent.com/iotserver24/S3-MegaVault/refs/heads/main/public/icon.png" alt="MegaVault Logo" width="150" height="150">
+</div>
 
 A modern, self-hosted cloud storage platform built with Next.js, React, and Flutter. MegaVault provides a Google Drive-like experience with complete control over your data.
 
 [![GitHub issues](https://img.shields.io/github/issues/iotserver24/S3-MegaVault)](https://github.com/iotserver24/S3-MegaVault/issues)
 [![GitHub license](https://img.shields.io/github/license/iotserver24/S3-MegaVault)](https://github.com/iotserver24/S3-MegaVault/blob/main/LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/iotserver24/S3-MegaVault)](https://github.com/iotserver24/S3-MegaVault/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/iotserver24/S3-MegaVault)](https://github.com/iotserver24/S3-MegaVault/network)
 
 ## 🔒 Security Notice
 
@@ -78,6 +81,72 @@ A modern, self-hosted cloud storage platform built with Next.js, React, and Flut
 4. **Start development server**
    ```bash
    npm run dev
+   ```
+
+## 🚀 One-Click Deployment
+
+### Deploy to Render (Recommended)
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/iotserver24/S3-MegaVault)
+
+**Render Setup Instructions:**
+1. Click the "Deploy to Render" button above
+2. Connect your GitHub account and select this repository
+3. Configure the following environment variables in Render dashboard:
+   - `USER_EMAIL`: Your admin email address
+   - `USER_PASSWORD`: Your secure password (minimum 20 characters)
+   - `NEXTAUTH_SECRET`: Generate a secure 64-character random string
+   - `UPSTASH_REDIS_REST_URL`: Your Upstash Redis URL
+   - `UPSTASH_REDIS_REST_TOKEN`: Your Upstash Redis token
+   - `S3_ENDPOINT`: Your S3-compatible storage endpoint
+   - `S3_ACCESS_KEY_ID`: Your storage access key
+   - `S3_SECRET_ACCESS_KEY`: Your storage secret key
+   - `S3_BUCKET`: Your storage bucket name
+4. Deploy! Your MegaVault instance will be available at your Render URL
+
+### Deploy to Vercel
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/iotserver24/S3-MegaVault&env=USER_EMAIL,USER_PASSWORD,NEXTAUTH_SECRET,UPSTASH_REDIS_REST_URL,UPSTASH_REDIS_REST_TOKEN,S3_ENDPOINT,S3_ACCESS_KEY_ID,S3_SECRET_ACCESS_KEY,S3_BUCKET,S3_REGION,STORAGE_ACCESS_MODE,USER_STORAGE_FOLDER,ENABLE_FILE_SHARING,ENABLE_3D_VISUALIZATION,ENABLE_PUBLIC_REGISTRATION,APP_NAME,APP_DESCRIPTION)
+
+**Vercel Setup Instructions:**
+1. Click the "Deploy with Vercel" button above
+2. Import your GitHub repository to Vercel
+3. Configure the environment variables in Vercel dashboard:
+   - `USER_EMAIL`: Your admin email address
+   - `USER_PASSWORD`: Your secure password (minimum 20 characters)
+   - `NEXTAUTH_SECRET`: Generate a secure 64-character random string
+   - `UPSTASH_REDIS_REST_URL`: Your Upstash Redis URL
+   - `UPSTASH_REDIS_REST_TOKEN`: Your Upstash Redis token
+   - `S3_ENDPOINT`: Your S3-compatible storage endpoint
+   - `S3_ACCESS_KEY_ID`: Your storage access key
+   - `S3_SECRET_ACCESS_KEY`: Your storage secret key
+   - `S3_BUCKET`: Your storage bucket name
+4. Deploy! Your MegaVault instance will be available at your Vercel URL
+
+### Prerequisites for Deployment
+
+Before deploying, you'll need to set up:
+
+1. **Redis Database** (Required):
+   - Sign up at [Upstash](https://upstash.com/) (recommended)
+   - Create a new Redis database
+   - Copy the REST URL and token
+
+2. **S3-Compatible Storage** (Required):
+   - [Cloudflare R2](https://developers.cloudflare.com/r2/) (recommended)
+   - [AWS S3](https://aws.amazon.com/s3/)
+   - [DigitalOcean Spaces](https://www.digitalocean.com/products/spaces)
+   - [MinIO](https://min.io/) (self-hosted)
+   - [Backblaze B2](https://www.backblaze.com/b2/)
+   - [Wasabi](https://wasabi.com/)
+
+3. **Generate Secure Secrets**:
+   ```bash
+   # Generate NEXTAUTH_SECRET (64 characters)
+   openssl rand -hex 32
+   
+   # Or use online generator
+   # https://generate-secret.vercel.app/64
    ```
 
 ## ⚙️ Configuration

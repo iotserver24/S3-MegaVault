@@ -2,6 +2,11 @@
 
 Welcome to the MegaVault documentation! This guide will help you understand and use all features of the MegaVault cloud storage system.
 
+[![GitHub issues](https://img.shields.io/github/issues/iotserver24/S3-MegaVault)](https://github.com/iotserver24/S3-MegaVault/issues)
+[![GitHub license](https://img.shields.io/github/license/iotserver24/S3-MegaVault)](https://github.com/iotserver24/S3-MegaVault/blob/main/LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/iotserver24/S3-MegaVault)](https://github.com/iotserver24/S3-MegaVault/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/iotserver24/S3-MegaVault)](https://github.com/iotserver24/S3-MegaVault/network)
+
 > **📱 Mobile App Status**: Please note that the Flutter mobile app is currently **not ready for use** and is under active development. We're seeking Flutter developers to help complete the mobile application. The web application is fully functional.
 
 ## 🚨 Important Notice About Mobile App
@@ -60,7 +65,7 @@ See the [main README](../README.md) for more details on contributing to the mobi
 
 If you encounter any issues or need help, please:
 1. Check the [Troubleshooting](./troubleshooting.md) guide
-2. Search existing [Issues](https://github.com/yourusername/MegaVault/issues)
+2. Search existing [Issues](https://github.com/iotserver24/S3-MegaVault/issues)
 3. Create a new issue if needed
 
 ## License
