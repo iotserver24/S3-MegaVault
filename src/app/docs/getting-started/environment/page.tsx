@@ -472,7 +472,7 @@ S3_BUCKET=megavault-production
 
 # Performance optimizations
 NEXT_PUBLIC_API_TIMEOUT=30000
-NEXT_PUBLIC_MAX_FILE_SIZE=100000000`}
+# No file size limits - unlimited uploads`}
         </CodeBlock>
 
         <h3>Production Security Checklist</h3>

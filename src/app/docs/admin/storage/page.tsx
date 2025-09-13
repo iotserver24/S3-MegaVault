@@ -337,7 +337,7 @@ AWS_S3_ACCELERATED=true`}
         <h3>File Handling Configuration</h3>
         <CodeBlock language="bash" title="Storage Settings">
 {`# File Size and Type Restrictions
-STORAGE_MAX_FILE_SIZE=104857600           # 100MB in bytes
+# No file size limits - unlimited uploads
 STORAGE_ALLOWED_TYPES=image/*,application/pdf,text/*,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,video/mp4,audio/mpeg
 
 # Upload Configuration

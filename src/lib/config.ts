@@ -24,7 +24,6 @@ export interface EnvironmentConfig {
 
   // Application Settings (Optional)
   DEFAULT_STORAGE_LIMIT_GB?: string;
-  MAX_FILE_SIZE_MB?: string;
   ENABLE_PUBLIC_REGISTRATION: string;
   ENABLE_FILE_SHARING: string;
   ENABLE_3D_VISUALIZATION: string;
@@ -120,12 +119,6 @@ export function validateEnvironmentConfig(): EnvironmentConfig {
     }
   }
 
-  if (process.env.MAX_FILE_SIZE_MB) {
-    const maxFileSize = parseInt(process.env.MAX_FILE_SIZE_MB);
-    if (isNaN(maxFileSize) || maxFileSize <= 0) {
-      throw new Error('MAX_FILE_SIZE_MB must be a positive number or omitted for unlimited file size');
-    }
-  }
 
   return {
     UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL!,
@@ -140,7 +133,6 @@ export function validateEnvironmentConfig(): EnvironmentConfig {
     USER_EMAIL: process.env.USER_EMAIL!,
     USER_PASSWORD: process.env.USER_PASSWORD!,
     DEFAULT_STORAGE_LIMIT_GB: process.env.DEFAULT_STORAGE_LIMIT_GB,
-    MAX_FILE_SIZE_MB: process.env.MAX_FILE_SIZE_MB,
     ENABLE_PUBLIC_REGISTRATION: process.env.ENABLE_PUBLIC_REGISTRATION || 'false',
     ENABLE_FILE_SHARING: process.env.ENABLE_FILE_SHARING || 'true',
     ENABLE_3D_VISUALIZATION: process.env.ENABLE_3D_VISUALIZATION || 'false',
@@ -189,28 +181,10 @@ export function getDefaultStorageLimit(): number {
   return limitGB * 1024 * 1024 * 1024; // Convert GB to bytes
 }
 
-/**
- * Gets maximum file size in bytes
- * Returns -1 for unlimited file size
- */
-export function getMaxFileSize(): number {
-  if (!process.env.MAX_FILE_SIZE_MB) {
-    return -1; // Unlimited file size
-  }
-  const limitMB = parseInt(process.env.MAX_FILE_SIZE_MB);
-  return limitMB * 1024 * 1024; // Convert MB to bytes
-}
 
 /**
  * Checks if storage is unlimited
  */
 export function isStorageUnlimited(): boolean {
   return !process.env.DEFAULT_STORAGE_LIMIT_GB;
-}
-
-/**
- * Checks if file size is unlimited
- */
-export function isFileSizeUnlimited(): boolean {
-  return !process.env.MAX_FILE_SIZE_MB;
 }

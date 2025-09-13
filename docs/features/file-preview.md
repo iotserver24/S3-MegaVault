@@ -109,7 +109,7 @@ MegaVault provides a powerful file preview system that supports a wide range of 
 - Content security policies enforced
 - Safe rendering of HTML content
 - XSS protection
-- File size limits enforced
+- No file size restrictions
 
 ### Performance
 - Optimized loading for large files

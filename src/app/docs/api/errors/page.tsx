@@ -210,7 +210,7 @@ export default function ErrorHandlingAPIPage() {
                 <td className="px-6 py-4 text-sm font-mono text-slate-900">413</td>
                 <td className="px-6 py-4 text-sm text-slate-600">Payload Too Large</td>
                 <td className="px-6 py-4 text-sm text-slate-600">File or request too large</td>
-                <td className="px-6 py-4 text-sm text-slate-600">File exceeds size limit</td>
+                <td className="px-6 py-4 text-sm text-slate-600">File upload failed</td>
               </tr>
               <tr>
                 <td className="px-6 py-4 text-sm font-mono text-slate-900">429</td>
@@ -556,7 +556,7 @@ function handleAPIError(error) {
             <p className="text-sm text-slate-600 mb-2"><strong>Problem:</strong> Upload fails with FILE_TOO_LARGE</p>
             <p className="text-sm text-slate-600 mb-2"><strong>Solution:</strong></p>
             <ul className="text-xs space-y-1">
-              <li>Check file size against plan limits</li>
+              <li>Check file integrity and format</li>
               <li>Implement chunked uploads for large files</li>
               <li>Compress files before upload</li>
             </ul>

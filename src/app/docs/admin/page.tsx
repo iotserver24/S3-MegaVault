@@ -231,7 +231,7 @@ METRICS_ENABLED=true`}
   },
   "storage": {
     "provider": "r2",
-    "maxFileSize": 104857600,
+    "unlimitedUploads": true,
     "allowedTypes": ["image/*", "application/pdf", "text/*"],
     "thumbnailSizes": [150, 300, 600]
   },
@@ -446,7 +446,7 @@ echo "[$DATE] Health check completed" >> $LOG_FILE`}
               <li>Check storage service credentials</li>
               <li>Verify bucket permissions</li>
               <li>Review CORS configuration</li>
-              <li>Check file size limits</li>
+              <li>Check file integrity</li>
             </ul>
           </Card>
         </div>

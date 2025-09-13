@@ -195,7 +195,7 @@ USER_PASSWORD=your_secure_password
 ```bash
 # Application Settings
 DEFAULT_STORAGE_LIMIT_GB=50
-MAX_FILE_SIZE_MB=100
+# No file size limits - unlimited uploads
 ENABLE_PUBLIC_REGISTRATION=true
 ENABLE_FILE_SHARING=true
 ENABLE_3D_VISUALIZATION=false

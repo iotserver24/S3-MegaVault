@@ -66,7 +66,7 @@ The MegaVault application now includes comprehensive drag and drop functionality
 
 ## Error Handling
 - File type validation
-- Size limit enforcement
+- No size restrictions
 - Network error recovery
 - User-friendly error messages
 

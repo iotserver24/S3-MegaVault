@@ -133,7 +133,7 @@ There are three ways to start editing a file:
 
 3. **Content Security:**
    - Input sanitization
-   - Size limits
+   - File type validation
    - Format validation
 
 ### Error Handling

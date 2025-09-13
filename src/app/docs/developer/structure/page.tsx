@@ -452,7 +452,7 @@ export const fileUploadSchema = z.object({
           <li><strong>Functions:</strong> camelCase (getUserData, handleFileUpload)</li>
           <li><strong>Components:</strong> PascalCase (FileUpload, UserProfile)</li>
           <li><strong>Types/Interfaces:</strong> PascalCase (User, FileMetadata)</li>
-          <li><strong>Constants:</strong> UPPER_SNAKE_CASE (API_BASE_URL, MAX_FILE_SIZE)</li>
+          <li><strong>Constants:</strong> UPPER_SNAKE_CASE (API_BASE_URL, STORAGE_BUCKET)</li>
           <li><strong>CSS Classes:</strong> kebab-case (file-list, upload-button)</li>
         </ul>
 

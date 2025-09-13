@@ -179,7 +179,7 @@ R2_PUBLIC_URL=https://your-custom-domain.com     # Optional custom domain
 # AWS_S3_ENDPOINT=https://s3.amazonaws.com        # Optional custom endpoint
 
 # Storage Settings
-STORAGE_MAX_FILE_SIZE=104857600       # 100MB in bytes
+# No file size limits - unlimited uploads
 STORAGE_ALLOWED_TYPES=image/*,application/pdf,text/*,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document
 STORAGE_ENABLE_THUMBNAILS=true       # Enable thumbnail generation
 STORAGE_THUMBNAIL_SIZES=150,300,600  # Thumbnail sizes in pixels
@@ -337,7 +337,7 @@ REDIS_URL=redis://localhost:6379/1   # Use different Redis database for dev
 
 # Development Storage (can use local or test bucket)
 R2_BUCKET_NAME=megavault-dev         # Development bucket
-STORAGE_MAX_FILE_SIZE=52428800       # 50MB for development
+# No file size limits - unlimited uploads
 
 # Development Security (less strict)
 BCRYPT_ROUNDS=4                      # Faster hashing for development
@@ -477,7 +477,7 @@ SENTRY_DSN=
 LOG_LEVEL=info
 
 # Optional: Custom Settings
-STORAGE_MAX_FILE_SIZE=104857600
+# No file size limits - unlimited uploads
 RATE_LIMIT_MAX=100`}
         </CodeBlock>
 

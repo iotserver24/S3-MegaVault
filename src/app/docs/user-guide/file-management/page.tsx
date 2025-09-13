@@ -128,14 +128,14 @@ export default function FileManagementPage() {
           </Card>
         </div>
 
-        <h3>File Size and Format Limits</h3>
+        <h3>Supported File Types</h3>
         <div className="bg-slate-50 rounded-lg p-6 not-prose">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h4 className="font-semibold text-slate-900 mb-3">Default Limits</h4>
+              <h4 className="font-semibold text-slate-900 mb-3">Upload Limits</h4>
               <ul className="text-sm space-y-1">
                 <li><strong>Single File:</strong> No size limit</li>
-                <li><strong>Batch Upload:</strong> 500 MB total</li>
+                <li><strong>Batch Upload:</strong> No total size limit</li>
                 <li><strong>Folder Upload:</strong> 1,000 files maximum</li>
                 <li><strong>File Name:</strong> 255 characters maximum</li>
               </ul>
@@ -151,16 +151,6 @@ export default function FileManagementPage() {
             </div>
           </div>
         </div>
-
-        <Alert type="warning" title="Large File Uploads">
-          For files larger than 100 MB, consider:
-          <ul className="mt-2">
-            <li>Compressing files before upload</li>
-            <li>Using a stable internet connection</li>
-            <li>Uploading during off-peak hours</li>
-            <li>Contact administrator for limit increases</li>
-          </ul>
-        </Alert>
       </section>
 
       <section id="organizing-files">
@@ -370,14 +360,6 @@ Avoid:
           </Card>
         </div>
 
-        <Alert type="info" title="Bulk Operation Limits">
-          To maintain system performance, bulk operations are limited to:
-          <ul className="mt-2">
-            <li>Maximum 100 files per operation</li>
-            <li>Maximum 1 GB total size for bulk downloads</li>
-            <li>Large operations are processed in the background</li>
-          </ul>
-        </Alert>
       </section>
 
       <section id="file-preview">
@@ -452,14 +434,6 @@ Avoid:
           <li><strong>Uploader:</strong> Who uploaded this version</li>
         </ul>
 
-        <Alert type="warning" title="Version Limits">
-          Version history is subject to storage limits:
-          <ul className="mt-2">
-            <li>Maximum 10 versions per file (configurable)</li>
-            <li>Versions older than 90 days may be archived</li>
-            <li>Large files may have fewer versions stored</li>
-          </ul>
-        </Alert>
       </section>
 
       <section id="advanced-features">

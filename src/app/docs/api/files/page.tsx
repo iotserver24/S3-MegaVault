@@ -219,12 +219,8 @@ isPublic: false`}
 }`}
         </CodeBlock>
 
-        <h3>File Size Limits</h3>
-        <ul>
-          <li><strong>Free Plan:</strong> No size limit</li>
-          <li><strong>Pro Plan:</strong> No size limit</li>
-          <li><strong>Enterprise:</strong> No size limit</li>
-        </ul>
+        <h3>File Upload</h3>
+        <p>All plans support unlimited file uploads with no size restrictions.</p>
       </section>
 
       <section id="get-file">
