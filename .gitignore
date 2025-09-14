@@ -27,7 +27,10 @@ qoder/
 # misc
 .DS_Store
 *.pem
-
+/old-code
+/old-code/
+old-code/
+    
 # debug
 npm-debug.log*
 yarn-debug.log*
