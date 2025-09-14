@@ -1,6 +1,6 @@
 {
   "name": "s3-megavault",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Open source cloud storage platform",
   "private": true,
   "scripts": {
