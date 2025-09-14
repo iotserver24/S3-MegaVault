@@ -3,60 +3,13 @@ import { CodeBlock, Alert, StepGuide, TableOfContents, Card } from '../../compon
 const tableOfContents = [
   { id: 'overview', title: 'Overview' },
   { id: 'system-requirements', title: 'System Requirements' },
-  { id: 'docker-installation', title: 'Docker Installation' },
   { id: 'manual-installation', title: 'Manual Installation' },
+  { id: 'cors-configuration', title: '🔧 CORS Configuration (CRITICAL)' },
   { id: 'production-deployment', title: 'Production Deployment' },
   { id: 'verification', title: 'Installation Verification' },
 ];
 
-const dockerSteps = [
-  {
-    title: 'Install Docker & Docker Compose',
-    description: 'Ensure Docker and Docker Compose are installed on your system.',
-    code: `# Check Docker installation
-docker --version
-docker-compose --version
-
-# Install on Ubuntu/Debian
-sudo apt update
-sudo apt install docker.io docker-compose
-
-# Install on Windows
-# Download Docker Desktop from https://docker.com/products/docker-desktop`,
-    language: 'bash',
-  },
-  {
-    title: 'Clone MegaVault Repository',
-    description: 'Download the MegaVault source code from GitHub.',
-    code: `git clone https://github.com/iotserver24/S3-MegaVault.git
-cd S3-MegaVault`,
-    language: 'bash',
-  },
-  {
-    title: 'Configure Environment Variables',
-    description: 'Set up your environment configuration for Docker deployment.',
-    code: `# Copy the Docker environment template
-cp .env.docker .env
-
-# Edit environment variables
-# Windows: notepad .env
-# Linux/macOS: nano .env`,
-    language: 'bash',
-  },
-  {
-    title: 'Build and Start Services',
-    description: 'Build the Docker images and start all services.',
-    code: `# Build and start in detached mode
-docker-compose up -d --build
-
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down`,
-    language: 'bash',
-  },
-];
+// Docker installation steps removed - Docker support coming in future release
 
 const manualSteps = [
   {
@@ -125,6 +78,23 @@ cp .env.example .env.local
     language: 'bash',
   },
   {
+    title: '⚠️ Configure CORS (CRITICAL for Large Files)',
+    description: 'Configure CORS on your storage bucket to enable multipart uploads for files >10MB.',
+    code: `# Create cors.json file in project root
+# This file is REQUIRED for large file uploads
+
+# For S3-compatible services (S3, R2, DigitalOcean, etc.)
+aws s3api put-bucket-cors \\
+  --bucket YOUR_BUCKET_NAME \\
+  --cors-configuration file://cors.json \\
+  --endpoint-url YOUR_ENDPOINT_URL
+
+# Without CORS, you'll get these errors:
+# "Access to XMLHttpRequest blocked by CORS policy"
+# "OPTIONS request 403 (Forbidden)"`,
+    language: 'bash',
+  },
+  {
     title: 'Run Database Migrations (if applicable)',
     description: 'Set up the database schema and initial data.',
     code: `# Run any setup scripts
@@ -151,20 +121,11 @@ export default function InstallationPage() {
       <section id="overview">
         <h2>Overview</h2>
         <p>
-          MegaVault can be installed using two primary methods: Docker (recommended for production) 
-          and manual installation (ideal for development). This guide covers both approaches in detail.
+          MegaVault uses manual installation for development and production deployments. 
+          Docker support is currently being designed and will be available in a future release.
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 not-prose">
-          <Card title="Docker Installation" description="Fast, reliable, production-ready deployment">
-            <ul className="text-sm space-y-1">
-              <li>✅ All dependencies included</li>
-              <li>✅ Consistent across environments</li>
-              <li>✅ Easy updates and rollbacks</li>
-              <li>✅ Production-ready configuration</li>
-            </ul>
-          </Card>
-          
+        <div className="grid grid-cols-1 gap-6 not-prose">
           <Card title="Manual Installation" description="Full control for development and customization">
             <ul className="text-sm space-y-1">
               <li>✅ Full development environment</li>
@@ -174,6 +135,38 @@ export default function InstallationPage() {
             </ul>
           </Card>
         </div>
+
+        <Alert type="info" title="🐳 Docker Support Coming Soon">
+          <p>
+            Docker and Docker Compose support is currently being designed and will be available in a future release. 
+            For now, please use the manual installation method below.
+          </p>
+        </Alert>
+
+        <Alert type="error" title="⚠️ CRITICAL: CORS Configuration Required">
+          <div className="space-y-4">
+            <p className="font-semibold text-red-800 dark:text-red-200">
+              You MUST configure CORS settings on your storage bucket before uploading files larger than 10MB!
+            </p>
+            <p className="text-red-700 dark:text-red-300">
+              Without proper CORS configuration, you will encounter these errors:
+            </p>
+            <div className="bg-red-100 dark:bg-red-900/30 rounded p-3 text-sm">
+              <p className="font-mono text-red-800 dark:text-red-200 mb-1">
+                <strong>Error 1:</strong> "Access to fetch at '&lt;r2-url&gt;' from origin 'http://localhost:3000' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource."
+              </p>
+              <p className="font-mono text-red-800 dark:text-red-200 mb-1">
+                <strong>Error 2:</strong> "Access to XMLHttpRequest blocked by CORS policy"
+              </p>
+              <p className="font-mono text-red-800 dark:text-red-200">
+                <strong>Error 3:</strong> "OPTIONS request 403 (Forbidden)"
+              </p>
+            </div>
+            <p className="text-red-700 dark:text-red-300 text-sm">
+              <strong>Solution:</strong> Follow the detailed CORS configuration steps below for your specific storage provider.
+            </p>
+          </div>
+        </Alert>
       </section>
 
       <section id="system-requirements">
@@ -284,6 +277,227 @@ services:
           <li>Monitor disk usage and performance</li>
           <li>Set up backup procedures</li>
         </ul>
+      </section>
+
+      <section id="cors-configuration">
+        <h2>🔧 CORS Configuration (CRITICAL)</h2>
+        <p>
+          Before uploading files larger than 10MB, you must configure CORS settings on your storage bucket. 
+          This section provides detailed instructions for all supported storage providers.
+        </p>
+
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+          <h3 className="font-semibold text-blue-900 dark:text-blue-200 mb-2">
+            📁 Create CORS Configuration File
+          </h3>
+          <p className="text-blue-800 dark:text-blue-300 text-sm mb-2">
+            Create a file named <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">cors.json</code> in your project root:
+          </p>
+          <CodeBlock language="json">
+{`[
+  {
+    "AllowedOrigins": ["*"],
+    "AllowedMethods": ["GET", "PUT", "POST", "DELETE", "HEAD"],
+    "AllowedHeaders": ["*"],
+    "ExposeHeaders": ["ETag", "x-amz-version-id"],
+    "MaxAgeSeconds": 3000
+  }
+]`}
+          </CodeBlock>
+        </div>
+
+        <div className="space-y-8">
+          {/* Amazon S3 */}
+          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <span className="bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 px-2 py-1 rounded text-sm mr-3">AWS</span>
+              Amazon S3
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Method 1: AWS CLI (Recommended)</h4>
+                <CodeBlock language="bash">
+{`aws s3api put-bucket-cors \\
+  --bucket YOUR_BUCKET_NAME \\
+  --cors-configuration file://cors.json`}
+                </CodeBlock>
+              </div>
+
+              <div>
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Method 2: AWS Console</h4>
+                <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                  <li>Go to <a href="https://s3.console.aws.amazon.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">AWS S3 Console</a></li>
+                  <li>Select your bucket</li>
+                  <li>Go to "Permissions" tab</li>
+                  <li>Scroll to "Cross-origin resource sharing (CORS)"</li>
+                  <li>Click "Edit" and paste the CORS configuration</li>
+                  <li>Click "Save changes"</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+
+          {/* Cloudflare R2 */}
+          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <span className="bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 px-2 py-1 rounded text-sm mr-3">CF</span>
+              Cloudflare R2
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Method 1: AWS CLI with R2 Endpoint</h4>
+                <CodeBlock language="bash">
+{`aws s3api put-bucket-cors \\
+  --bucket YOUR_BUCKET_NAME \\
+  --cors-configuration file://cors.json \\
+  --endpoint-url https://YOUR_ACCOUNT_ID.r2.cloudflarestorage.com`}
+                </CodeBlock>
+              </div>
+
+              <div>
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Method 2: Cloudflare Dashboard</h4>
+                <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                  <li>Go to <a href="https://dash.cloudflare.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Cloudflare Dashboard</a></li>
+                  <li>Navigate to <strong>R2 Object Storage</strong></li>
+                  <li>Select your bucket</li>
+                  <li>Go to "Settings" tab</li>
+                  <li>Scroll to "CORS policy" section</li>
+                  <li>Click "Add CORS policy"</li>
+                  <li>Paste the CORS configuration in the JSON editor</li>
+                  <li>Click "Save"</li>
+                </ol>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  📖 <a href="https://developers.cloudflare.com/r2/buckets/cors/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Official R2 CORS Documentation</a>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Google Cloud Storage */}
+          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded text-sm mr-3">GCP</span>
+              Google Cloud Storage
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Method 1: gsutil Command</h4>
+                <CodeBlock language="bash">
+{`gsutil cors set cors.json gs://YOUR_BUCKET_NAME`}
+                </CodeBlock>
+              </div>
+
+              <div>
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Method 2: Google Cloud Console</h4>
+                <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                  <li>Go to <a href="https://console.cloud.google.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Google Cloud Console</a></li>
+                  <li>Navigate to <strong>Cloud Storage</strong></li>
+                  <li>Select your bucket</li>
+                  <li>Click on "Permissions" tab</li>
+                  <li>Scroll to "CORS configuration"</li>
+                  <li>Click "Edit" and add the CORS rules</li>
+                  <li>Click "Save"</li>
+                </ol>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  📖 <a href="https://cloud.google.com/storage/docs/configuring-cors" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Official GCS CORS Documentation</a>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* DigitalOcean Spaces */}
+          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded text-sm mr-3">DO</span>
+              DigitalOcean Spaces
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Method 1: AWS CLI with Spaces Endpoint</h4>
+                <CodeBlock language="bash">
+{`aws s3api put-bucket-cors \\
+  --bucket YOUR_BUCKET_NAME \\
+  --cors-configuration file://cors.json \\
+  --endpoint-url https://YOUR_REGION.digitaloceanspaces.com`}
+                </CodeBlock>
+              </div>
+
+              <div>
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Method 2: DigitalOcean Control Panel</h4>
+                <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                  <li>Go to <a href="https://cloud.digitalocean.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">DigitalOcean Control Panel</a></li>
+                  <li>Navigate to <strong>Spaces</strong></li>
+                  <li>Select your Space</li>
+                  <li>Go to "Settings" tab</li>
+                  <li>Scroll to "CORS configuration"</li>
+                  <li>Click "Add CORS rule"</li>
+                  <li>Paste the CORS configuration</li>
+                  <li>Click "Save"</li>
+                </ol>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  📖 <a href="https://www.digitalocean.com/docs/spaces/how-to/enable-cors/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Official DO Spaces CORS Documentation</a>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* MinIO */}
+          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <span className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded text-sm mr-3">MINIO</span>
+              MinIO (Self-Hosted)
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Method 1: MinIO Client (mc) - Recommended</h4>
+                <CodeBlock language="bash">
+{`# Install MinIO Client
+curl https://dl.min.io/client/mc/release/linux-amd64/mc -o mc
+chmod +x mc && sudo mv mc /usr/local/bin/
+
+# Configure MinIO alias
+mc alias set myminio http://your-minio-server:9000 YOUR_ACCESS_KEY YOUR_SECRET_KEY
+
+# Apply CORS configuration (uses cors-minio.json)
+mc admin config set myminio/ cors-minio.json`}
+                </CodeBlock>
+              </div>
+
+              <div>
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">Method 2: MinIO Console</h4>
+                <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                  <li>Go to MinIO Console (usually <code>http://your-minio-server:9001</code>)</li>
+                  <li>Navigate to your bucket</li>
+                  <li>Go to "Settings" tab</li>
+                  <li>Click on "CORS configuration"</li>
+                  <li>Add the CORS rules</li>
+                  <li>Click "Save"</li>
+                </ol>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  📖 <a href="https://min.io/docs/minio/linux/operations/networking/cors.html" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Official MinIO CORS Documentation</a>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <Alert type="warning" title="Testing CORS Configuration">
+          <div className="space-y-2">
+            <p>After configuring CORS, test your setup:</p>
+            <ol className="list-decimal list-inside space-y-1 text-sm">
+              <li>Open browser developer tools (F12)</li>
+              <li>Go to "Network" tab</li>
+              <li>Attempt to upload a large file (&gt;10MB)</li>
+              <li>Check for CORS errors in the console</li>
+              <li>Verify upload completes successfully</li>
+            </ol>
+          </div>
+        </Alert>
       </section>
 
       <section id="verification">

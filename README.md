@@ -21,6 +21,16 @@ A modern, self-hosted cloud storage platform built with Next.js, React, and Flut
 - Regular security updates are required
 - Review the [Security Documentation](docs/security/overview.md) before deployment
 
+## 🚨 CORS Configuration Notice
+
+⚠️ **CRITICAL**: Before uploading files larger than 10MB, you MUST configure CORS settings on your storage bucket. 
+
+**Without CORS configuration, you will encounter these errors:**
+- `"Access to XMLHttpRequest blocked by CORS policy"`
+- `"OPTIONS request 403 (Forbidden)"`
+
+**Solution:** Create a `cors.json` file and apply it to your bucket using AWS CLI. See the [Quick Start](#-quick-start) section below for instructions.
+
 ## 🌟 Features
 
 - **Self-Hosted**: Full control over your data and infrastructure
@@ -28,39 +38,19 @@ A modern, self-hosted cloud storage platform built with Next.js, React, and Flut
 - **Modern UI**: Clean, responsive web interface built with React and Tailwind CSS
 - **Mobile App**: Native Flutter mobile application for iOS and Android (in development)
 - **File Management**: Upload, download, organize, and preview files
+- **Large File Support**: Multipart uploads for files larger than 10MB with progress tracking
 - **File Sharing**: Public and private file sharing capabilities
 - **Security First**: Environment-based authentication, secure file access, and production-ready security
 - **S3 Compatible**: Works with any S3-compatible storage (Cloudflare R2, AWS S3, MinIO, DigitalOcean Spaces)
 - **Redis Backend**: Fast, reliable data storage with Redis/Upstash
-- **Docker Ready**: Easy deployment with Docker and Docker Compose
+- **Easy Deployment**: Simple manual installation with comprehensive documentation
 - **Open Source**: MIT licensed, transparent, and community-driven
 
 ## 🚀 Quick Start
 
-### Using Docker (Recommended)
+### Manual Installation (Current Method)
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/iotserver24/S3-MegaVault.git
-   cd S3-MegaVault
-   ```
-
-2. **Configure environment**
-   ```bash
-   cp .env.docker .env
-   # Edit .env with your configuration
-   ```
-
-3. **Start the application**
-   ```bash
-   docker-compose up -d
-   ```
-
-4. **Access the application**
-   - Web: http://localhost:3001
-   - Admin: Login with your configured admin credentials
-
-### Manual Installation
+> **🐳 Docker Support Coming Soon:** Docker and Docker Compose support is currently being designed and will be available in a future release.
 
 1. **Prerequisites**
    - Node.js 18+ 

@@ -61,8 +61,34 @@ Repository: https://github.com/iotserver24/S3-MegaVault
 
 ### Upload File
 - **POST** `/api/files/upload`
-- **Description:** Upload a file (multipart/form-data: `file`, `folder?`).
+- **Description:** Upload a file (multipart/form-data: `file`, `folder?`). For files larger than 10MB, use multipart upload endpoints.
 - **Response:** `{ message, key }`
+
+### Multipart Upload (Large Files >10MB)
+
+#### Initiate Multipart Upload
+- **POST** `/api/files/multipart/initiate`
+- **Description:** Initiate a multipart upload for large files.
+- **Request JSON:** `{ fileName, fileSize, fileType, folder?, relativePath? }`
+- **Response:** `{ uploadId, key, fileName, fileSize, fileType }`
+
+#### Get Presigned URLs
+- **POST** `/api/files/multipart/presigned-urls`
+- **Description:** Get presigned URLs for uploading parts.
+- **Request JSON:** `{ uploadId, key, partNumbers: number[] }`
+- **Response:** `{ presignedUrls: [{ partNumber, url }] }`
+
+#### Complete Multipart Upload
+- **POST** `/api/files/multipart/complete`
+- **Description:** Complete a multipart upload after all parts are uploaded.
+- **Request JSON:** `{ uploadId, key, parts: [{ ETag, PartNumber }] }`
+- **Response:** `{ message, key, location, etag }`
+
+#### Abort Multipart Upload
+- **POST** `/api/files/multipart/abort`
+- **Description:** Abort a multipart upload and clean up uploaded parts.
+- **Request JSON:** `{ uploadId, key }`
+- **Response:** `{ message }`
 
 ### Delete File
 - **DELETE** `/api/files/delete`
@@ -111,6 +137,46 @@ Repository: https://github.com/iotserver24/S3-MegaVault
 - **POST** `/api/billing/signup-checkout`
 - **Description:** Not applicable in single-user mode.
 - **Response:** 403 Forbidden - "Billing not available in single-user mode"
+
+---
+
+## Mobile API Endpoints
+
+### Mobile Upload File
+- **POST** `/api/mobile/files/upload`
+- **Description:** Upload a file for mobile clients (multipart/form-data: `file`, `folder?`). For files larger than 10MB, use mobile multipart upload endpoints.
+- **Headers:** `Authorization: Bearer <JWT>`
+- **Response:** `{ message, key, name, size, type }`
+
+### Mobile Multipart Upload (Large Files >10MB)
+
+#### Mobile Initiate Multipart Upload
+- **POST** `/api/mobile/files/multipart/initiate`
+- **Description:** Initiate a multipart upload for large files (mobile).
+- **Headers:** `Authorization: Bearer <JWT>`
+- **Request JSON:** `{ fileName, fileSize, fileType, folder? }`
+- **Response:** `{ uploadId, key, fileName, fileSize, fileType }`
+
+#### Mobile Get Presigned URLs
+- **POST** `/api/mobile/files/multipart/presigned-urls`
+- **Description:** Get presigned URLs for uploading parts (mobile).
+- **Headers:** `Authorization: Bearer <JWT>`
+- **Request JSON:** `{ uploadId, key, partNumbers: number[] }`
+- **Response:** `{ presignedUrls: [{ partNumber, url }] }`
+
+#### Mobile Complete Multipart Upload
+- **POST** `/api/mobile/files/multipart/complete`
+- **Description:** Complete a multipart upload after all parts are uploaded (mobile).
+- **Headers:** `Authorization: Bearer <JWT>`
+- **Request JSON:** `{ uploadId, key, parts: [{ ETag, PartNumber }] }`
+- **Response:** `{ message, key, location, etag, name, size, type }`
+
+#### Mobile Abort Multipart Upload
+- **POST** `/api/mobile/files/multipart/abort`
+- **Description:** Abort a multipart upload and clean up uploaded parts (mobile).
+- **Headers:** `Authorization: Bearer <JWT>`
+- **Request JSON:** `{ uploadId, key }`
+- **Response:** `{ message }`
 
 ---
 

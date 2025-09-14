@@ -13,14 +13,8 @@ const tableOfContents = [
 const quickSetupSteps = [
   {
     title: 'Download MegaVault',
-    description: 'Get MegaVault from the official repository or use Docker.',
-    code: `# Option 1: Docker (Recommended)
-git clone https://github.com/iotserver24/S3-MegaVault.git
-cd S3-MegaVault
-docker-compose up -d
-
-# Option 2: Manual Setup
-git clone https://github.com/iotserver24/S3-MegaVault.git
+    description: 'Get MegaVault from the official repository.',
+    code: `git clone https://github.com/iotserver24/S3-MegaVault.git
 cd S3-MegaVault
 npm install`,
     language: 'bash',
@@ -41,6 +35,22 @@ R2_ACCOUNT_ID=your-cloudflare-account-id
 R2_ACCESS_KEY_ID=your-access-key
 R2_SECRET_ACCESS_KEY=your-secret-key
 R2_BUCKET_NAME=your-bucket-name`,
+    language: 'bash',
+  },
+  {
+    title: 'Configure CORS (Required for Large Files)',
+    description: 'Set up CORS on your storage bucket to enable multipart uploads for files >10MB.',
+    code: `# For S3-compatible services (S3, R2, DigitalOcean, etc.)
+aws s3api put-bucket-cors \\
+  --bucket YOUR_BUCKET_NAME \\
+  --cors-configuration file://cors.json \\
+  --endpoint-url YOUR_ENDPOINT_URL
+
+# For Google Cloud Storage
+gsutil cors set cors.json gs://YOUR_BUCKET_NAME
+
+# See detailed instructions at:
+# /docs/getting-started/cors-setup`,
     language: 'bash',
   },
   {
@@ -91,6 +101,13 @@ export default function QuickStartPage() {
           This quick start guide will get you up and running with MegaVault in under 10 minutes. 
           We'll cover the essential setup steps and get you uploading files right away.
         </p>
+
+        <Alert type="info" title="🐳 Docker Support Coming Soon">
+          <p>
+            Docker and Docker Compose support is currently being designed and will be available in a future release. 
+            For now, please use the manual installation method below.
+          </p>
+        </Alert>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 not-prose">
           <Card title="⏱️ 5 Minutes" description="Basic setup and configuration">

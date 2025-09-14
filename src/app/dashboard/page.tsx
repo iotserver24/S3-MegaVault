@@ -58,6 +58,8 @@ interface UploadProgress {
   status: 'pending' | 'uploading' | 'processing' | 'completed' | 'error';
   error?: string;
   relativePath: string;
+  uploadedParts?: number;
+  totalParts?: number;
 }
 
 interface SubscriptionInfo {
@@ -413,8 +415,7 @@ export default function Dashboard() {
         const batch = selectedFiles.slice(i, i + batchSize);
         await Promise.all(batch.map(async (file, batchIndex) => {
           const index = i + batchIndex;
-          const formData = new FormData();
-
+          
           // Add folder path information
           let relativePath = '';
           
@@ -435,58 +436,95 @@ export default function Dashboard() {
             relativePath = file.name;
           }
 
-          // Append the file to FormData
-          formData.append('file', file);
-          formData.append('relativePath', relativePath);
-
-          if (currentFolder) {
-            formData.append('folder', currentFolder);
-          }
-
           try {
             setUploadProgress(prev => prev.map((p, i) => 
               i === index ? { ...p, status: 'uploading' } : p
             ));
 
-            const xhr = new XMLHttpRequest();
-            
-            await new Promise((resolve, reject) => {
-              xhr.upload.addEventListener('progress', (event) => {
-                if (event.lengthComputable) {
-                  const progress = (event.loaded / event.total) * 100;
-                  setUploadProgress(prev => prev.map((p, i) => 
-                    i === index ? { ...p, progress } : p
-                  ));
-                }
+            // Check if file is larger than 10MB and use multipart upload
+            const LARGE_FILE_THRESHOLD = 10 * 1024 * 1024; // 10MB
+            if (file.size > LARGE_FILE_THRESHOLD) {
+              console.log(`Using multipart upload for large file: ${file.name} (${file.size} bytes)`);
+              
+              const { uploadFileMultipart } = await import('@/lib/multipart-upload');
+              
+              const config = {
+                fileName: file.name,
+                fileSize: file.size,
+                fileType: file.type,
+                folder: currentFolder || undefined,
+                relativePath: relativePath !== file.name ? relativePath : undefined,
+              };
+
+              await uploadFileMultipart(file, config, (progress) => {
+                setUploadProgress(prev => prev.map((p, i) => 
+                  i === index ? { 
+                    ...p, 
+                    progress: progress.progress,
+                    status: progress.status,
+                    error: progress.error,
+                    uploadedParts: progress.uploadedParts,
+                    totalParts: progress.totalParts
+                  } : p
+                ));
               });
 
-              xhr.addEventListener('load', () => {
-                if (xhr.status === 200) {
-                  // Set to processing state first
-                  setUploadProgress(prev => prev.map((p, i) => 
-                    i === index ? { ...p, status: 'processing', progress: 100 } : p
-                  ));
-                  
-                  // Simulate processing time for large files
-                  setTimeout(() => {
+              // Set to completed state
+              setUploadProgress(prev => prev.map((p, i) => 
+                i === index ? { ...p, status: 'completed', progress: 100 } : p
+              ));
+            } else {
+              // Use regular upload for smaller files
+              console.log(`Using regular upload for file: ${file.name} (${file.size} bytes)`);
+              
+              const formData = new FormData();
+              formData.append('file', file);
+              formData.append('relativePath', relativePath);
+
+              if (currentFolder) {
+                formData.append('folder', currentFolder);
+              }
+
+              const xhr = new XMLHttpRequest();
+              
+              await new Promise((resolve, reject) => {
+                xhr.upload.addEventListener('progress', (event) => {
+                  if (event.lengthComputable) {
+                    const progress = (event.loaded / event.total) * 100;
                     setUploadProgress(prev => prev.map((p, i) => 
-                      i === index ? { ...p, status: 'completed', progress: 100 } : p
+                      i === index ? { ...p, progress } : p
                     ));
-                  }, 1000); // Show processing state for at least 1 second
-                  
-                  resolve(xhr.response);
-                } else {
-                  reject(new Error(`Upload failed: ${xhr.statusText}`));
-                }
-              });
+                  }
+                });
 
-              xhr.addEventListener('error', () => {
-                reject(new Error('Upload failed'));
-              });
+                xhr.addEventListener('load', () => {
+                  if (xhr.status === 200) {
+                    // Set to processing state first
+                    setUploadProgress(prev => prev.map((p, i) => 
+                      i === index ? { ...p, status: 'processing', progress: 100 } : p
+                    ));
+                    
+                    // Simulate processing time for large files
+                    setTimeout(() => {
+                      setUploadProgress(prev => prev.map((p, i) => 
+                        i === index ? { ...p, status: 'completed', progress: 100 } : p
+                      ));
+                    }, 1000); // Show processing state for at least 1 second
+                    
+                    resolve(xhr.response);
+                  } else {
+                    reject(new Error(`Upload failed: ${xhr.statusText}`));
+                  }
+                });
 
-              xhr.open('POST', '/api/files/upload');
-              xhr.send(formData);
-            });
+                xhr.addEventListener('error', () => {
+                  reject(new Error('Upload failed'));
+                });
+
+                xhr.open('POST', '/api/files/upload');
+                xhr.send(formData);
+              });
+            }
 
             } catch (error: any) {
               console.error('Error uploading file:', error);

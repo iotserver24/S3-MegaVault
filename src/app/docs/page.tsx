@@ -23,6 +23,14 @@ const navigationCards = [
     color: 'from-blue-500 to-blue-600',
   },
   {
+    title: '🔧 CORS Configuration (CRITICAL)',
+    description: 'Configure CORS settings for your storage bucket to enable large file uploads',
+    href: '/docs/getting-started/installation#cors-configuration',
+    icon: WrenchScrewdriverIcon,
+    color: 'from-red-500 to-red-600',
+    urgent: true,
+  },
+  {
     title: 'User Guide',
     description: 'Complete guide to using MegaVault dashboard, file management, and sharing',
     href: '/docs/user-guide',
@@ -255,19 +263,32 @@ export default function DocsHomePage() {
               <Link
                 key={card.title}
                 href={card.href}
-                className="group relative bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-all duration-200 hover:-translate-y-1"
+                className={`group relative bg-white rounded-xl p-6 shadow-sm border hover:shadow-md transition-all duration-200 hover:-translate-y-1 ${
+                  card.urgent 
+                    ? 'border-red-200 bg-red-50 hover:bg-red-100 ring-2 ring-red-200 ring-opacity-50' 
+                    : 'border-slate-200'
+                }`}
               >
                 <div className="flex items-start space-x-4">
                   <div className={`flex-shrink-0 w-12 h-12 bg-gradient-to-r ${card.color} rounded-lg flex items-center justify-center`}>
                     <card.icon className="w-6 h-6 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-slate-900 mb-2 group-hover:text-blue-600">
+                    <h3 className={`text-lg font-semibold mb-2 group-hover:text-blue-600 ${
+                      card.urgent ? 'text-red-800' : 'text-slate-900'
+                    }`}>
                       {card.title}
                     </h3>
-                    <p className="text-slate-600 text-sm leading-relaxed">
+                    <p className={`text-sm leading-relaxed ${
+                      card.urgent ? 'text-red-700' : 'text-slate-600'
+                    }`}>
                       {card.description}
                     </p>
+                    {card.urgent && (
+                      <div className="mt-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        ⚠️ Required for Large Files
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-b-xl" 

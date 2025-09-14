@@ -46,25 +46,6 @@ export default function GettingStartedPage() {
 
         <div className="not-prose grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
           <Card 
-            title="🚀 Quick Start (Recommended)" 
-            description="Get up and running in minutes with our streamlined Docker setup"
-            className="border-2 border-blue-200 bg-blue-50"
-          >
-            <div className="space-y-3">
-              <p className="text-sm text-slate-600">Best for: First-time users, production deployments</p>
-              <div className="flex flex-col space-y-2">
-                <Link 
-                  href="/docs/getting-started/quick-start"
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-center justify-center"
-                >
-                  Start Quick Setup →
-                </Link>
-                <span className="text-xs text-slate-500 text-center">~10 minutes</span>
-              </div>
-            </div>
-          </Card>
-
-          <Card 
             title="⚙️ Manual Installation" 
             description="Step-by-step installation for development and customization"
             className="border-2 border-green-200 bg-green-50"
@@ -82,11 +63,47 @@ export default function GettingStartedPage() {
               </div>
             </div>
           </Card>
+
+          <Card 
+            title="🔧 CORS Configuration" 
+            description="Configure storage provider CORS for large file uploads"
+            className="border-2 border-orange-200 bg-orange-50"
+          >
+            <div className="space-y-3">
+              <p className="text-sm text-slate-600">Required for: Files larger than 10MB</p>
+              <div className="flex flex-col space-y-2">
+                <Link 
+                  href="/docs/getting-started/cors-setup"
+                  className="inline-flex items-center px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 text-center justify-center"
+                >
+                  Configure CORS →
+                </Link>
+                <span className="text-xs text-slate-500 text-center">~5 minutes</span>
+              </div>
+            </div>
+          </Card>
         </div>
+
+        <Alert type="info" title="🐳 Docker Support Coming Soon">
+          <p className="mt-2">
+            Docker and Docker Compose support is currently being designed and will be available in a future release. 
+            For now, please use the manual installation method.
+          </p>
+        </Alert>
 
         <Alert type="warning" title="Choose Your Path">
           We recommend starting with the Quick Start guide if you're new to MegaVault. 
           You can always switch to manual installation later for more control.
+        </Alert>
+
+        <Alert type="info" title="Important: CORS Configuration Required">
+          <p className="mt-2">
+            Before uploading files larger than 10MB, you must configure CORS settings on your storage bucket. 
+            This enables multipart uploads to work properly. 
+            <Link href="/docs/getting-started/cors-setup" className="font-medium underline hover:no-underline">
+              Configure CORS now →
+            </Link>
+          </p>
         </Alert>
       </section>
 
@@ -95,25 +112,16 @@ export default function GettingStartedPage() {
         <p>Before starting, ensure your system meets the minimum requirements:</p>
 
         <div className="not-prose">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
+          <div className="grid grid-cols-1 gap-6 my-6">
             <div className="border border-slate-200 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Docker Setup (Recommended)</h3>
-              <ul className="space-y-2 text-sm">
-                <li>✅ Docker 20.0+ and Docker Compose</li>
-                <li>✅ 2GB RAM minimum (4GB recommended)</li>
-                <li>✅ 10GB disk space minimum</li>
-                <li>✅ Internet connection for initial setup</li>
-              </ul>
-            </div>
-            
-            <div className="border border-slate-200 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Manual Setup</h3>
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">Manual Setup Requirements</h3>
               <ul className="space-y-2 text-sm">
                 <li>✅ Node.js 18+ runtime</li>
                 <li>✅ Redis server (local or remote)</li>
                 <li>✅ S3-compatible storage service</li>
                 <li>✅ 4GB RAM minimum</li>
                 <li>✅ 20GB disk space minimum</li>
+                <li>✅ Internet connection for initial setup</li>
               </ul>
             </div>
           </div>
