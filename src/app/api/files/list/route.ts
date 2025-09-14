@@ -1,23 +1,28 @@
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 import { S3Client, ListObjectsV2Command, HeadObjectCommand } from '@aws-sdk/client-s3';
-import { Redis } from '@upstash/redis';
 import { authOptions } from '@/lib/auth';
 import { getStorageConfig } from '@/lib/storage';
+import { getRedisClient } from '@/lib/redis';
 
-const s3Client = new S3Client({
-  region: process.env.S3_REGION || 'auto',
-  endpoint: process.env.S3_ENDPOINT,
-  credentials: {
-    accessKeyId: process.env.S3_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
-  },
-});
-
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
+function getS3Client(): S3Client {
+  const endpoint = process.env.S3_ENDPOINT;
+  const accessKeyId = process.env.S3_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY;
+  
+  if (!endpoint || !accessKeyId || !secretAccessKey) {
+    throw new Error('S3 configuration is missing');
+  }
+  
+  return new S3Client({
+    region: process.env.S3_REGION || 'auto',
+    endpoint,
+    credentials: {
+      accessKeyId,
+      secretAccessKey,
+    },
+  });
+}
 
 export async function GET(req: Request) {
   try {
@@ -49,6 +54,7 @@ export async function GET(req: Request) {
       Prefix: totalStoragePrefix,
     });
 
+    const s3Client = getS3Client();
     const totalStorageResponse = await s3Client.send(totalStorageCommand);
     const totalStorageUsed = (totalStorageResponse.Contents || [])
       .reduce((acc, item) => acc + (item.Size || 0), 0);
@@ -94,7 +100,7 @@ export async function GET(req: Request) {
         try {
           // First check Redis for public status with timeout
           const fileRedisData = await Promise.race([
-            redis.hgetall(`file:${key}`),
+            getRedisClient().hgetall(`file:${key}`),
             new Promise((_, reject) => 
               setTimeout(() => reject(new Error('Redis timeout')), 2000)
             )
